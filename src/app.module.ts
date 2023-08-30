@@ -1,9 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
 
 @Module({
-  imports: [],
+  imports: [
+    ConfigModule.forRoot({
+      load: [configuration],
+      isGlobal: true, // Включение\отключение глобальной обрасти для конфига .env
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
