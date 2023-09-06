@@ -14,7 +14,7 @@ export class CreateConfirmationCodeTable1693818036815
         generationStrategy: 'increment',
       }),
       new TableColumn({
-        name: 'code',
+        name: 'value',
         type: 'varchar',
       }),
       new TableColumn({
@@ -25,7 +25,6 @@ export class CreateConfirmationCodeTable1693818036815
       new TableColumn({
         name: 'email',
         type: 'varchar',
-        isUnique: true,
       }),
       new TableColumn({
         name: 'phone',

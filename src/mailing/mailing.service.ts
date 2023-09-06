@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
-import configuration from '../config/configuration';
 import { MailMessageOptionsDto } from './dto/mailMessageOptionsDto';
+import { ConfirmationCode } from '../confirmation-code/confirmation-code.entity';
+import { EnumConfirmation } from '../enum/EnumConfirmation';
 
 @Injectable()
 export class MailingService {
@@ -10,8 +11,8 @@ export class MailingService {
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
   ) {}
-  private setTransport() {
-    configuration();
+  // Установка транспортного протокола
+  private _setTransport() {
     const config = {
       host: this.configService.get('mailing.host'),
       port: this.configService.get<number>('mailing.port'),
@@ -24,9 +25,10 @@ export class MailingService {
     this.mailerService.addTransporter('gmail', config);
   }
 
-  async sendMessage(options: MailMessageOptionsDto): Promise<boolean> {
+  // Отправка сообщения
+  private async _sendMessage(options: MailMessageOptionsDto): Promise<boolean> {
     try {
-      this.setTransport();
+      this._setTransport();
       await this.mailerService.sendMail({
         transporterName: 'gmail',
         from: this.configService.get<string>('mailing.username'),
@@ -39,5 +41,19 @@ export class MailingService {
     } catch (e) {
       return false;
     }
+  }
+
+  // Отправка сообщения подтверждения
+  async sendConfirmCodeMessage(code: ConfirmationCode) {
+    const subjects = {
+      [EnumConfirmation.TYPE_REGISTRATION]: 'Подтверждение регистрации',
+    };
+    const options = {
+      to: code.email,
+      subject: subjects[code.type],
+      template: `./confirmation/${code.type}`,
+      context: { code: code.value },
+    };
+    await this._sendMessage(options);
   }
 }
