@@ -9,8 +9,9 @@ import {
   IResponseSendCode,
 } from './interfaces/response-code.interface';
 
-import randomInteger from '../helpers/randomInteger';
+import randomInteger from '../base/helpers/randomInteger';
 import { ConfirmationCode } from './confirmation-code.entity';
+import { ExceptionTypeEnum } from '../base/enum/exception/exception-type.enum';
 
 @Injectable()
 export class ConfirmationCodeService {
@@ -74,12 +75,39 @@ export class ConfirmationCodeService {
   private _validateCode(
     payload: CheckConfirmationCodeDto,
     code: ConfirmationCode | null,
+    throwException: string[] = [],
   ): IResponseCheckCode {
-    return {
+    const validate = {
       confirm: code && code.value === payload.code,
       live: code && this._checkIsLiveCode(code),
       delay: code && this._checkIsDelayCode(code),
     };
+
+    if (throwException.includes('confirm') && !validate.confirm) {
+      const error = {
+        message: `confirm_code.validate.confirm`,
+        type: ExceptionTypeEnum.TYPE_CONTROL_CODE,
+      };
+      throw new HttpException(error, 500);
+    }
+
+    if (throwException.includes('delay') && validate.delay) {
+      const error = {
+        message: `confirm_code.validate.delay`,
+        type: ExceptionTypeEnum.TYPE_CONTROL_CODE,
+      };
+      throw new HttpException(error, 500);
+    }
+
+    if (throwException.includes('live') && !validate.live) {
+      const error = {
+        message: `confirm_code.validate.live`,
+        type: ExceptionTypeEnum.TYPE_CONTROL_CODE,
+      };
+      throw new HttpException(error, 500);
+    }
+
+    return validate;
   }
 
   // Получение ответа для отправки на клиент
@@ -104,11 +132,7 @@ export class ConfirmationCodeService {
       return await this._create(payload);
     }
     // Если код отправлялся ранее проверяем его на задержку
-    const validate = this._validateCode(payload, code);
-    if (validate.delay) {
-      const message = `confirm_code.validate.delay`;
-      throw new HttpException(message, 500);
-    }
+    this._validateCode(payload, code, ['delay']);
     // Если нет задержки то обновляем значение кода
     const success = await this._updateValue(code);
     if (!success) {

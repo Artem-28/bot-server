@@ -1,8 +1,8 @@
-import { TEnumConfirmationType } from '../../enum/EnumConfirmation';
+import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
 
 export interface IResponseSendCode {
   email: string;
-  type: TEnumConfirmationType;
+  type: ConfirmationTypeEnum;
   delay: number;
   live: number;
 }

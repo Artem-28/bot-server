@@ -1,11 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {Body, Controller, HttpException, Post} from '@nestjs/common';
 
 import { MailingService } from '../mailing/mailing.service';
 import { ConfirmationCodeService } from './confirmation-code.service';
 
 import { CreateConfirmationCodeDto } from './dto/create-confirmation-code.dto';
 import { CheckConfirmationCodeDto } from './dto/check-confirmation-code.dto';
-
 
 @Controller('confirmation-code')
 export class ConfirmationCodeController {
@@ -22,7 +21,7 @@ export class ConfirmationCodeController {
       await this.mailingService.sendConfirmCodeMessage(code);
       return this.confirmationCodeService.getResponseCode(code);
     } catch (e) {
-      return e.message;
+      throw new HttpException(e.response, e.status);
     }
   }
 
@@ -31,7 +30,7 @@ export class ConfirmationCodeController {
     try {
       return this.confirmationCodeService.checkCode(body);
     } catch (e) {
-      return e.message;
+      throw new HttpException(e.response, e.status);
     }
   }
 }

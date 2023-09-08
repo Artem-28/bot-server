@@ -1,15 +1,14 @@
 import { IsEmail, IsEnum, IsDefined } from 'class-validator';
 import {
-  EnumConfirmation,
-  TEnumConfirmationType,
-} from '../../enum/EnumConfirmation';
+  ConfirmationTypeEnum,
+} from '../../base/enum/confirmation/confirmation-type.enum';
 
 export class CheckConfirmationCodeDto {
   @IsEmail()
   email: string;
 
-  @IsEnum(EnumConfirmation)
-  type: TEnumConfirmationType;
+  @IsEnum(ConfirmationTypeEnum)
+  type: ConfirmationTypeEnum;
 
   @IsDefined()
   code?: string;
