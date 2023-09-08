@@ -1,9 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
-import { ConfirmationTypeEnum } from '../base/enum/confirmation/confirmation-type.enum';
 
-export class CreateConfirmationCodeTable1693818036815
-  implements MigrationInterface
-{
+export class CreateUsersTable1694190258477 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const columns = [
       new TableColumn({
@@ -14,21 +11,33 @@ export class CreateConfirmationCodeTable1693818036815
         generationStrategy: 'increment',
       }),
       new TableColumn({
-        name: 'value',
-        type: 'varchar',
-      }),
-      new TableColumn({
-        name: 'type',
-        type: 'enum',
-        enum: [ConfirmationTypeEnum.TYPE_REGISTRATION],
-      }),
-      new TableColumn({
         name: 'email',
         type: 'varchar',
+        isUnique: true,
       }),
       new TableColumn({
         name: 'phone',
         type: 'varchar',
+        isNullable: true,
+      }),
+      new TableColumn({
+        name: 'license_agreement',
+        type: 'boolean',
+        default: false,
+      }),
+      new TableColumn({
+        name: 'email_verified_at',
+        type: 'timestamp',
+        isNullable: true,
+      }),
+      new TableColumn({
+        name: 'phone_verified_at',
+        type: 'timestamp',
+        isNullable: true,
+      }),
+      new TableColumn({
+        name: 'last_active_at',
+        type: 'timestamp',
         isNullable: true,
       }),
       new TableColumn({
@@ -43,11 +52,12 @@ export class CreateConfirmationCodeTable1693818036815
         onUpdate: 'CURRENT_TIMESTAMP',
       }),
     ];
-    const table = new Table({ name: 'confirmation_code', columns });
+
+    const table = new Table({ name: 'users', columns });
     await queryRunner.createTable(table, true);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('confirmation_code');
+    await queryRunner.dropTable('users');
   }
 }

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 import { MailMessageOptionsDto } from './dto/mailMessageOptionsDto';
-import { ConfirmationCode } from '../confirmation-code/confirmation-code.entity';
-import { ConfirmationTypeEnum } from '../base/enum/confirmation/confirmation-type.enum';
+import { ConfirmationCodes } from '../confirmation-codes/confirmation-codes.entity';
+import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
 
 @Injectable()
 export class MailingService {
@@ -44,7 +44,7 @@ export class MailingService {
   }
 
   // Отправка сообщения подтверждения
-  async sendConfirmCodeMessage(code: ConfirmationCode) {
+  async sendConfirmCodeMessage(code: ConfirmationCodes) {
     const subjects = {
       [ConfirmationTypeEnum.TYPE_REGISTRATION]: 'Подтверждение регистрации',
     };

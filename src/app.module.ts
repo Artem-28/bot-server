@@ -11,7 +11,9 @@ import typeorm from './config/typeorm';
 import { AllExceptionFilter } from './base/filters/all-exception.filter';
 import { ResponseInterceptor } from './base/interceptors/response.interceptor';
 // Modules
-import { ConfirmationCodeModule } from './confirmation-code/confirmation-code.module';
+import { ConfirmationCodesModule } from './modules/confirmation-codes/confirmation-codes.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -24,7 +26,9 @@ import { ConfirmationCodeModule } from './confirmation-code/confirmation-code.mo
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get('typeorm'),
     }),
-    ConfirmationCodeModule,
+    ConfirmationCodesModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [

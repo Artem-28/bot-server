@@ -1,4 +1,4 @@
-import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
+import { ConfirmationTypeEnum } from '../../../base/enum/confirmation/confirmation-type.enum';
 
 export interface IResponseSendCode {
   email: string;

@@ -55,6 +55,7 @@ function getExceptionMessage(exception: any): string {
   if (typeof response === 'string') {
     return response;
   }
+  console.log('RESPONECE', response);
   if (response.hasOwnProperty('message')) {
     return response.message;
   }

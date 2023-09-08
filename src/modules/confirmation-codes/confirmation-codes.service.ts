@@ -2,26 +2,26 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateConfirmationCodeDto } from './dto/create-confirmation-code.dto';
-import { CheckConfirmationCodeDto } from './dto/check-confirmation-code.dto';
+import { CreateConfirmationCodesDto } from './dto/create-confirmation-codes.dto';
+import { CheckConfirmationCodesDto } from './dto/check-confirmation-codes.dto';
 import {
   IResponseCheckCode,
   IResponseSendCode,
 } from './interfaces/response-code.interface';
 
-import randomInteger from '../base/helpers/randomInteger';
-import { ConfirmationCode } from './confirmation-code.entity';
-import { ExceptionTypeEnum } from '../base/enum/exception/exception-type.enum';
+import randomInteger from '../../base/helpers/randomInteger';
+import { ConfirmationCodes } from './confirmation-codes.entity';
+import { ExceptionTypeEnum } from '../../base/enum/exception/exception-type.enum';
 
 @Injectable()
-export class ConfirmationCodeService {
+export class ConfirmationCodesService {
   private readonly _codeLength: number = 6; // Длина кода символов
   private readonly _liveTimeCode: number = 360 * 1000; // Время действия кода мс.
   private readonly _delayTimeCode: number = 120 * 1000; // Вркмя задержки мс.
 
   constructor(
-    @InjectRepository(ConfirmationCode)
-    private readonly confirmationCodesRepository: Repository<ConfirmationCode>,
+    @InjectRepository(ConfirmationCodes)
+    private readonly confirmationCodesRepository: Repository<ConfirmationCodes>,
   ) {}
 
   // Генерация значения кода
@@ -34,14 +34,14 @@ export class ConfirmationCodeService {
   }
 
   // Проверка срока действия кода
-  private _checkIsLiveCode(code: ConfirmationCode): boolean {
+  private _checkIsLiveCode(code: ConfirmationCodes): boolean {
     const liveTimestamp = code.updatedTimestamp + this._liveTimeCode;
     const currentTimestamp = new Date().getTime();
     return liveTimestamp > currentTimestamp;
   }
 
   // Проверка задержки обновления кода
-  private _checkIsDelayCode(code: ConfirmationCode): boolean {
+  private _checkIsDelayCode(code: ConfirmationCodes): boolean {
     const delayTimestamp = code.updatedTimestamp + this._delayTimeCode;
     const currentTimestamp = new Date().getTime();
     return delayTimestamp > currentTimestamp;
@@ -49,21 +49,21 @@ export class ConfirmationCodeService {
 
   // Создание нового кода подтверждения
   private async _create(
-    payload: CreateConfirmationCodeDto,
-  ): Promise<ConfirmationCode> {
+    payload: CreateConfirmationCodesDto,
+  ): Promise<ConfirmationCodes> {
     const data = { ...payload, value: this._generateCode() };
     return await this.confirmationCodesRepository.save(data);
   }
 
   // Получение кода по типу и email
   private async _getCode(
-    payload: CreateConfirmationCodeDto,
-  ): Promise<ConfirmationCode | null> {
+    payload: CreateConfirmationCodesDto,
+  ): Promise<ConfirmationCodes | null> {
     return await this.confirmationCodesRepository.findOneBy(payload);
   }
 
   // Обновление значения кода
-  private async _updateValue(code: ConfirmationCode): Promise<boolean> {
+  private async _updateValue(code: ConfirmationCodes): Promise<boolean> {
     const result = await this.confirmationCodesRepository.update(
       { id: code.id },
       { value: this._generateCode() },
@@ -73,8 +73,8 @@ export class ConfirmationCodeService {
 
   // Валидация кода
   private _validateCode(
-    payload: CheckConfirmationCodeDto,
-    code: ConfirmationCode | null,
+    payload: CheckConfirmationCodesDto,
+    code: ConfirmationCodes | null,
     throwException: string[] = [],
   ): IResponseCheckCode {
     const validate = {
@@ -111,7 +111,7 @@ export class ConfirmationCodeService {
   }
 
   // Получение ответа для отправки на клиент
-  public getResponseCode(code: ConfirmationCode): IResponseSendCode {
+  public getResponseCode(code: ConfirmationCodes): IResponseSendCode {
     const currentTimestamp = new Date().getTime();
     const diffTimestamp = code.updatedTimestamp - currentTimestamp;
     // Остаток задержки в сек.
@@ -124,8 +124,8 @@ export class ConfirmationCodeService {
 
   // Логика оздания кода подтверждения
   public async createCode(
-    payload: CreateConfirmationCodeDto,
-  ): Promise<ConfirmationCode> {
+    payload: CreateConfirmationCodesDto,
+  ): Promise<ConfirmationCodes> {
     const code = await this._getCode(payload);
     // Если код не отправлялся ранее, отправляем новый код
     if (!code) {
@@ -145,7 +145,7 @@ export class ConfirmationCodeService {
 
   // Проверка кода
   public async checkCode(
-    payload: CheckConfirmationCodeDto,
+    payload: CheckConfirmationCodesDto,
   ): Promise<IResponseCheckCode> {
     const { type, email } = payload;
     const code = await this._getCode({ type, email });
