@@ -12,4 +12,8 @@ export class CreateUsersDto {
   licenseAgreement: boolean;
 
   phone?: string;
+
+  emailVerifiedAt?: Date;
+
+  phoneVerifiedAt?: Date;
 }

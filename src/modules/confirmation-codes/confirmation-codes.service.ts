@@ -83,6 +83,14 @@ export class ConfirmationCodesService {
       delay: code && this._checkIsDelayCode(code),
     };
 
+    if (throwException.includes('live') && !validate.live) {
+      const error = {
+        message: `confirm_code.validate.live`,
+        type: ExceptionTypeEnum.TYPE_CONTROL_CODE,
+      };
+      throw new HttpException(error, 500);
+    }
+
     if (throwException.includes('confirm') && !validate.confirm) {
       const error = {
         message: `confirm_code.validate.confirm`,
@@ -94,14 +102,6 @@ export class ConfirmationCodesService {
     if (throwException.includes('delay') && validate.delay) {
       const error = {
         message: `confirm_code.validate.delay`,
-        type: ExceptionTypeEnum.TYPE_CONTROL_CODE,
-      };
-      throw new HttpException(error, 500);
-    }
-
-    if (throwException.includes('live') && !validate.live) {
-      const error = {
-        message: `confirm_code.validate.live`,
         type: ExceptionTypeEnum.TYPE_CONTROL_CODE,
       };
       throw new HttpException(error, 500);
@@ -146,9 +146,10 @@ export class ConfirmationCodesService {
   // Проверка кода
   public async checkCode(
     payload: CheckConfirmationCodesDto,
+    throwException: string[] = [],
   ): Promise<IResponseCheckCode> {
     const { type, email } = payload;
     const code = await this._getCode({ type, email });
-    return this._validateCode(payload, code);
+    return this._validateCode(payload, code, throwException);
   }
 }

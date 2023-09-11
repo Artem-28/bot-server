@@ -16,6 +16,10 @@ export class CreateUsersTable1694190258477 implements MigrationInterface {
         isUnique: true,
       }),
       new TableColumn({
+        name: 'password',
+        type: 'varchar',
+      }),
+      new TableColumn({
         name: 'phone',
         type: 'varchar',
         isNullable: true,
