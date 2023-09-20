@@ -1,21 +1,35 @@
 import { HttpException, Injectable } from '@nestjs/common';
 
-import { UsersService } from '../users/users.service';
-import { ConfirmationCodesService } from '../confirmation-codes/confirmation-codes.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
+import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.service';
 
-import { RegistrationUserDto } from './dto/registration-user.dto';
+import { RegistrationUsersDto } from './dto/registration-users.dto';
 import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
 import { ExceptionTypeEnum } from '../../base/enum/exception/exception-type.enum';
+import { User } from '../user/user.entity';
+import { LoginUsersDto } from './dto/login-users.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly _usersService: UsersService,
-    private readonly _confirmationCodesService: ConfirmationCodesService,
+    private readonly _userService: UserService,
+    private readonly _confirmationCodeService: ConfirmationCodeService,
+    private readonly _jwtService: JwtService,
   ) {}
 
-  public async registrationUser(payload: RegistrationUserDto) {
-    const { email, code, password, licenseAgreement } = payload;
+  // Проверка пароля пользователя
+  public async checkUser(payload: LoginUsersDto) {
+    const user = await this._userService.getByEmail(payload.email);
+    if (!user) return null;
+    const match = await bcrypt.compare(payload.password, user.password);
+    if (!match) return null;
+    return user;
+  }
+
+  public async registrationUser(payload: RegistrationUsersDto): Promise<User> {
+    const { email, code, licenseAgreement } = payload;
 
     // Проверка приняты ли условия пользования
     if (!licenseAgreement) {
@@ -25,23 +39,38 @@ export class AuthService {
       };
       throw new HttpException(error, 500);
     }
-
-    const checkCodeData = {
-      email,
-      code,
-      type: ConfirmationTypeEnum.TYPE_REGISTRATION,
-    };
     // Валидация кода подтверждения
-    await this._confirmationCodesService.checkCode(checkCodeData, []);
+    await this._confirmationCodeService.checkCode(
+      {
+        email,
+        code,
+        type: ConfirmationTypeEnum.TYPE_REGISTRATION,
+      },
+      ['confirm', 'live'],
+    );
 
-    // Установка необходимых полей, установка верифиации email
-    const userData = {
+    const password = await bcrypt.hash(payload.password, 10);
+    // Создание пользователя
+    const user = await this._userService.create({
       email,
       password,
       licenseAgreement,
       emailVerifiedAt: new Date(),
+    });
+    await this._confirmationCodeService.remove({
+      email,
+      type: ConfirmationTypeEnum.TYPE_REGISTRATION,
+    });
+    return user;
+  }
+
+  // Авторизовать пользователя
+  public loginUser(user: User) {
+    const payload = { username: user.email, sub: user.id };
+    return {
+      accessToken: this._jwtService.sign(payload),
+      typeToken: 'Bearer',
+      user,
     };
-    // Создание пользователя
-    return await this._usersService.create(userData);
   }
 }

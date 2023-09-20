@@ -2,7 +2,7 @@ import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../../base/entities/base.entity';
 import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
 
-@Entity()
+@Entity({ name: 'confirmation_codes' })
 export class ConfirmationCodes extends BaseEntity {
   @Column()
   value: string;

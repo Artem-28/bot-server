@@ -6,19 +6,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Configuration
 import configuration from './config/configuration';
+import jwt from './config/jwt';
 import typeorm from './config/typeorm';
 // Providers
 import { AllExceptionFilter } from './base/filters/all-exception.filter';
 import { ResponseInterceptor } from './base/interceptors/response.interceptor';
 // Modules
-import { ConfirmationCodesModule } from './modules/confirmation-codes/confirmation-codes.module';
+import { ConfirmationCodeModule } from './modules/confirmation-code/confirmation-code.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration, typeorm],
+      load: [configuration, typeorm, jwt],
       isGlobal: true, // Включение\отключение глобальной обрасти для конфига .env
     }),
     TypeOrmModule.forRootAsync({
@@ -26,9 +27,9 @@ import { UsersModule } from './modules/users/users.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get('typeorm'),
     }),
-    ConfirmationCodesModule,
+    ConfirmationCodeModule,
     AuthModule,
-    UsersModule,
+    UserModule,
   ],
   controllers: [],
   providers: [

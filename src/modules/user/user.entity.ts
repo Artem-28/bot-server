@@ -2,8 +2,8 @@ import { BaseEntity } from '../../base/entities/base.entity';
 import { Column, Entity } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-@Entity()
-export class Users extends BaseEntity {
+@Entity({ name: 'users' })
+export class User extends BaseEntity {
   @Column()
   email: string;
 
@@ -26,7 +26,7 @@ export class Users extends BaseEntity {
   @Column({ name: 'last_active_at' })
   lastActiveAt: Date;
 
-  constructor(partial: Partial<Users>) {
+  constructor(partial: Partial<User>) {
     super();
     Object.assign(this, partial);
   }

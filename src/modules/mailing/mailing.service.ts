@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 import { MailMessageOptionsDto } from './dto/mailMessageOptionsDto';
-import { ConfirmationCodes } from '../confirmation-codes/confirmation-codes.entity';
+import { ConfirmationCodes } from '../confirmation-code/confirmation-code.entity';
 import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
 
 @Injectable()

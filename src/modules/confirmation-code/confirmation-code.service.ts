@@ -2,19 +2,20 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateConfirmationCodesDto } from './dto/create-confirmation-codes.dto';
-import { CheckConfirmationCodesDto } from './dto/check-confirmation-codes.dto';
+import { CreateConfirmationCodeDto } from './dto/create-confirmation-code.dto';
+import { CheckConfirmationCodeDto } from './dto/check-confirmation-code.dto';
 import {
   IResponseCheckCode,
   IResponseSendCode,
 } from './interfaces/response-code.interface';
 
 import randomInteger from '../../base/helpers/randomInteger';
-import { ConfirmationCodes } from './confirmation-codes.entity';
+import { ConfirmationCodes } from './confirmation-code.entity';
 import { ExceptionTypeEnum } from '../../base/enum/exception/exception-type.enum';
+import { RemoveConfirmationCodeDto } from './dto/remove-confirmation-code.dto';
 
 @Injectable()
-export class ConfirmationCodesService {
+export class ConfirmationCodeService {
   private readonly _codeLength: number = 6; // Длина кода символов
   private readonly _liveTimeCode: number = 360 * 1000; // Время действия кода мс.
   private readonly _delayTimeCode: number = 120 * 1000; // Вркмя задержки мс.
@@ -49,7 +50,7 @@ export class ConfirmationCodesService {
 
   // Создание нового кода подтверждения
   private async _create(
-    payload: CreateConfirmationCodesDto,
+    payload: CreateConfirmationCodeDto,
   ): Promise<ConfirmationCodes> {
     const data = { ...payload, value: this._generateCode() };
     return await this.confirmationCodesRepository.save(data);
@@ -57,7 +58,7 @@ export class ConfirmationCodesService {
 
   // Получение кода по типу и email
   private async _getCode(
-    payload: CreateConfirmationCodesDto,
+    payload: CreateConfirmationCodeDto,
   ): Promise<ConfirmationCodes | null> {
     return await this.confirmationCodesRepository.findOneBy(payload);
   }
@@ -73,7 +74,7 @@ export class ConfirmationCodesService {
 
   // Валидация кода
   private _validateCode(
-    payload: CheckConfirmationCodesDto,
+    payload: CheckConfirmationCodeDto,
     code: ConfirmationCodes | null,
     throwException: string[] = [],
   ): IResponseCheckCode {
@@ -124,7 +125,7 @@ export class ConfirmationCodesService {
 
   // Логика оздания кода подтверждения
   public async createCode(
-    payload: CreateConfirmationCodesDto,
+    payload: CreateConfirmationCodeDto,
   ): Promise<ConfirmationCodes> {
     const code = await this._getCode(payload);
     // Если код не отправлялся ранее, отправляем новый код
@@ -145,11 +146,15 @@ export class ConfirmationCodesService {
 
   // Проверка кода
   public async checkCode(
-    payload: CheckConfirmationCodesDto,
+    payload: CheckConfirmationCodeDto,
     throwException: string[] = [],
   ): Promise<IResponseCheckCode> {
     const { type, email } = payload;
     const code = await this._getCode({ type, email });
     return this._validateCode(payload, code, throwException);
+  }
+
+  public async remove(payload: RemoveConfirmationCodeDto) {
+    return this.confirmationCodesRepository.delete(payload);
   }
 }

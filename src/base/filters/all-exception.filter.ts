@@ -25,9 +25,13 @@ export interface IErrorResponse {
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost): void {
+    console.error('EXCEPTION', exception);
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
+    let status = 500;
+    if (typeof exception.getStatus === 'function') {
+      status = exception?.getStatus();
+    }
 
     const errorMessage = getExceptionMessage(exception);
     const errorType = getExceptionType(exception);
@@ -55,7 +59,6 @@ function getExceptionMessage(exception: any): string {
   if (typeof response === 'string') {
     return response;
   }
-  console.log('RESPONECE', response);
   if (response.hasOwnProperty('message')) {
     return response.message;
   }

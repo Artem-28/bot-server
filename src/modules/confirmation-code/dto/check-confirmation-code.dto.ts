@@ -3,7 +3,7 @@ import {
   ConfirmationTypeEnum,
 } from '../../../base/enum/confirmation/confirmation-type.enum';
 
-export class CheckConfirmationCodesDto {
+export class CheckConfirmationCodeDto {
   @IsEmail()
   email: string;
 
