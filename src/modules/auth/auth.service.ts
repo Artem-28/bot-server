@@ -46,9 +46,8 @@ export class AuthService {
         code,
         type: ConfirmationTypeEnum.TYPE_REGISTRATION,
       },
-      ['confirm', 'live'],
+      ['live', 'confirm'],
     );
-
     const password = await bcrypt.hash(payload.password, 10);
     // Создание пользователя
     const user = await this._userService.create({
@@ -57,6 +56,7 @@ export class AuthService {
       licenseAgreement,
       emailVerifiedAt: new Date(),
     });
+
     await this._confirmationCodeService.remove({
       email,
       type: ConfirmationTypeEnum.TYPE_REGISTRATION,

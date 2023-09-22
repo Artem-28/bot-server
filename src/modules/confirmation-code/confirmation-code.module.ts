@@ -4,10 +4,10 @@ import { ConfirmationCodeService } from './confirmation-code.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailingModule } from '../mailing/mailing.module';
 import { MailingService } from '../mailing/mailing.service';
-import { ConfirmationCodes } from './confirmation-code.entity';
+import { ConfirmationCode } from './confirmation-code.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ConfirmationCodes]), MailingModule],
+  imports: [TypeOrmModule.forFeature([ConfirmationCode]), MailingModule],
   controllers: [ConfirmationCodeController],
   providers: [ConfirmationCodeService, MailingService],
 })

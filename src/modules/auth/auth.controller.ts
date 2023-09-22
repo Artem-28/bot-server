@@ -6,8 +6,8 @@ import {
   Post,
   UseGuards,
   UseInterceptors,
-  Request,
-  Get, Req, Res,
+  Get,
+  Req,
 } from '@nestjs/common';
 import { RegistrationUsersDto } from './dto/registration-users.dto';
 import { AuthService } from './auth.service';
@@ -31,7 +31,7 @@ export class AuthController {
   @UseGuards(AuthLocalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('login')
-  public async login(@Request() req) {
+  public async login(@Req() req) {
     try {
       return this.authService.loginUser(req.user);
     } catch (e) {

@@ -10,7 +10,7 @@ import {
 } from './interfaces/response-code.interface';
 
 import randomInteger from '../../base/helpers/randomInteger';
-import { ConfirmationCodes } from './confirmation-code.entity';
+import { ConfirmationCode } from './confirmation-code.entity';
 import { ExceptionTypeEnum } from '../../base/enum/exception/exception-type.enum';
 import { RemoveConfirmationCodeDto } from './dto/remove-confirmation-code.dto';
 
@@ -21,8 +21,8 @@ export class ConfirmationCodeService {
   private readonly _delayTimeCode: number = 120 * 1000; // Вркмя задержки мс.
 
   constructor(
-    @InjectRepository(ConfirmationCodes)
-    private readonly confirmationCodesRepository: Repository<ConfirmationCodes>,
+    @InjectRepository(ConfirmationCode)
+    private readonly confirmationCodesRepository: Repository<ConfirmationCode>,
   ) {}
 
   // Генерация значения кода
@@ -35,14 +35,14 @@ export class ConfirmationCodeService {
   }
 
   // Проверка срока действия кода
-  private _checkIsLiveCode(code: ConfirmationCodes): boolean {
+  private _checkIsLiveCode(code: ConfirmationCode): boolean {
     const liveTimestamp = code.updatedTimestamp + this._liveTimeCode;
     const currentTimestamp = new Date().getTime();
     return liveTimestamp > currentTimestamp;
   }
 
   // Проверка задержки обновления кода
-  private _checkIsDelayCode(code: ConfirmationCodes): boolean {
+  private _checkIsDelayCode(code: ConfirmationCode): boolean {
     const delayTimestamp = code.updatedTimestamp + this._delayTimeCode;
     const currentTimestamp = new Date().getTime();
     return delayTimestamp > currentTimestamp;
@@ -51,20 +51,21 @@ export class ConfirmationCodeService {
   // Создание нового кода подтверждения
   private async _create(
     payload: CreateConfirmationCodeDto,
-  ): Promise<ConfirmationCodes> {
+  ): Promise<ConfirmationCode> {
     const data = { ...payload, value: this._generateCode() };
-    return await this.confirmationCodesRepository.save(data);
+    const response = await this.confirmationCodesRepository.save(data);
+    return new ConfirmationCode(response);
   }
 
   // Получение кода по типу и email
   private async _getCode(
     payload: CreateConfirmationCodeDto,
-  ): Promise<ConfirmationCodes | null> {
+  ): Promise<ConfirmationCode | null> {
     return await this.confirmationCodesRepository.findOneBy(payload);
   }
 
   // Обновление значения кода
-  private async _updateValue(code: ConfirmationCodes): Promise<boolean> {
+  private async _updateValue(code: ConfirmationCode): Promise<boolean> {
     const result = await this.confirmationCodesRepository.update(
       { id: code.id },
       { value: this._generateCode() },
@@ -75,7 +76,7 @@ export class ConfirmationCodeService {
   // Валидация кода
   private _validateCode(
     payload: CheckConfirmationCodeDto,
-    code: ConfirmationCodes | null,
+    code: ConfirmationCode | null,
     throwException: string[] = [],
   ): IResponseCheckCode {
     const validate = {
@@ -83,7 +84,6 @@ export class ConfirmationCodeService {
       live: code && this._checkIsLiveCode(code),
       delay: code && this._checkIsDelayCode(code),
     };
-
     if (throwException.includes('live') && !validate.live) {
       const error = {
         message: `confirm_code.validate.live`,
@@ -107,12 +107,11 @@ export class ConfirmationCodeService {
       };
       throw new HttpException(error, 500);
     }
-
     return validate;
   }
 
   // Получение ответа для отправки на клиент
-  public getResponseCode(code: ConfirmationCodes): IResponseSendCode {
+  public getResponseCode(code: ConfirmationCode): IResponseSendCode {
     const currentTimestamp = new Date().getTime();
     const diffTimestamp = code.updatedTimestamp - currentTimestamp;
     // Остаток задержки в сек.
@@ -126,7 +125,7 @@ export class ConfirmationCodeService {
   // Логика оздания кода подтверждения
   public async createCode(
     payload: CreateConfirmationCodeDto,
-  ): Promise<ConfirmationCodes> {
+  ): Promise<ConfirmationCode> {
     const code = await this._getCode(payload);
     // Если код не отправлялся ранее, отправляем новый код
     if (!code) {

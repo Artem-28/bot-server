@@ -15,6 +15,8 @@ import { ResponseInterceptor } from './base/interceptors/response.interceptor';
 import { ConfirmationCodeModule } from './modules/confirmation-code/confirmation-code.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import { ProjectModule } from './modules/project/project.module';
+import { ScriptModule } from './modules/script/script.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { UserModule } from './modules/user/user.module';
     ConfirmationCodeModule,
     AuthModule,
     UserModule,
+    ProjectModule,
+    ScriptModule,
   ],
   controllers: [],
   providers: [

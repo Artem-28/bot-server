@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/user.entity';
 import { ConfirmationCodeModule } from '../confirmation-code/confirmation-code.module';
 import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.service';
-import { ConfirmationCodes } from '../confirmation-code/confirmation-code.entity';
+import { ConfirmationCode } from '../confirmation-code/confirmation-code.entity';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './passport/strategies/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
@@ -17,7 +17,7 @@ import { JwtStrategy } from './passport/strategies/jwt.strategy';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([ConfirmationCodes]),
+    TypeOrmModule.forFeature([ConfirmationCode]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

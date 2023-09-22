@@ -17,6 +17,7 @@ export class ConfirmationCodeController {
   public async send(@Body() body: CreateConfirmationCodeDto) {
     try {
       const code = await this.confirmationCodeService.createCode(body);
+      console.log('CODE', code);
       // Отправка кода подтверждения на почту
       await this.mailingService.sendConfirmCodeMessage(code);
       return this.confirmationCodeService.getResponseCode(code);

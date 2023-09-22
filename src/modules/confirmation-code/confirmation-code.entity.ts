@@ -3,7 +3,7 @@ import { BaseEntity } from '../../base/entities/base.entity';
 import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
 
 @Entity({ name: 'confirmation_codes' })
-export class ConfirmationCodes extends BaseEntity {
+export class ConfirmationCode extends BaseEntity {
   @Column()
   value: string;
 
@@ -17,10 +17,16 @@ export class ConfirmationCodes extends BaseEntity {
   phone: string;
 
   get updatedTimestamp() {
-    return new Date(this.updatedAt).getTime();
+    const data = this.updatedAt || this.createdAt;
+    return new Date(data).getTime();
   }
 
   get createdTimestamp() {
     return new Date(this.createdAt).getTime();
+  }
+
+  constructor(partial: Partial<ConfirmationCode>) {
+    super();
+    Object.assign(this, partial);
   }
 }
