@@ -25,7 +25,8 @@
     "migration:revert": "npm run typeorm -- -d ./src/config/typeorm.ts migration:revert",
     "controller": "nest g controller -- ./modules/$npm_config_name",
     "module": "nest g module -- ./modules/$npm_config_name",
-    "service": "nest g service -- ./modules/$npm_config_name"
+    "service": "nest g service -- ./modules/$npm_config_name",
+    "module:create": "npm run module -- && npm run service -- && npm run controller --"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.9.1",

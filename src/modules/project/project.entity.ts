@@ -1,25 +1,58 @@
-import { Column, Entity, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { BaseEntity } from '../../base/entities/base.entity';
 import { Script } from '../script/script.entity';
 import { User } from '../user/user.entity';
+import { ProjectSubscriber } from '../project-subscriber/projectSubscriber.entity';
 
 @Entity({ name: 'projects' })
 export class Project extends BaseEntity {
   @Column()
-  title: string;
+  public title: string;
 
   @Column({ name: 'user_id', nullable: true })
-  userId: number;
+  public userId: number;
 
   @ManyToOne(() => User, (user) => user.projects, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  public user: User;
 
   @OneToMany(() => Script, (script) => script.project)
-  scripts: Script[];
+  public scripts: Script[];
+
+  @OneToMany(
+    () => ProjectSubscriber,
+    (projectSubscriber) => projectSubscriber.project,
+  )
+  public subscribers: User[];
+
+  // @ManyToMany(() => User, (user) => user.subscribedProjects)
+  // @JoinTable({
+  //   name: 'project_users',
+  //   joinColumn: {
+  //     name: 'project_id',
+  //     referencedColumnName: 'id',
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'user_id',
+  //     referencedColumnName: 'id',
+  //   },
+  // })
+  // subscribers: User[];
 
   constructor(partial: Partial<Project>) {
     super();
     Object.assign(this, partial);
+  }
+
+  public checkOwner(userId: number): boolean {
+    return this.userId === userId;
   }
 }

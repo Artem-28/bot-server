@@ -23,4 +23,11 @@ export class UserService {
     if (!data) return null;
     return new User(data);
   }
+
+  // Получение пользователя по id
+  public async getById(id: number): Promise<User | null> {
+    const data = await this._usersRepository.findOneBy({ id });
+    if (!data) return null;
+    return new User(data);
+  }
 }

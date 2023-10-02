@@ -28,10 +28,6 @@ export class AllExceptionFilter implements ExceptionFilter {
     console.error('EXCEPTION', exception);
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    let status = 500;
-    if (typeof exception.getStatus === 'function') {
-      status = exception?.getStatus();
-    }
 
     const errorMessage = getExceptionMessage(exception);
     const errorType = getExceptionType(exception);
@@ -46,7 +42,7 @@ export class AllExceptionFilter implements ExceptionFilter {
       },
     };
 
-    response.status(status).json(responseData);
+    response.status(statusCode).json(responseData);
   }
 }
 
@@ -59,7 +55,7 @@ function getExceptionMessage(exception: any): string {
   if (typeof response === 'string') {
     return response;
   }
-  if (response.hasOwnProperty('message')) {
+  if (response && response.hasOwnProperty('message')) {
     return response.message;
   }
 
@@ -75,7 +71,7 @@ function getExceptionType(exception: any): ExceptionTypeEnum {
   if (typeof response === 'string') {
     return ExceptionTypeEnum.TYPE_GLOBAL;
   }
-  if (response.hasOwnProperty('type') && typeof response.type) {
+  if (response && response.hasOwnProperty('type') && typeof response.type) {
     return response.type;
   }
   return ExceptionTypeEnum.TYPE_GLOBAL;
@@ -83,7 +79,7 @@ function getExceptionType(exception: any): ExceptionTypeEnum {
 
 function getExceptionStatus(exception: any): number {
   if (exception instanceof HttpException) {
-    return exception.getStatus();
+    return exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
   }
   return HttpStatus.INTERNAL_SERVER_ERROR;
 }

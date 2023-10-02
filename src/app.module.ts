@@ -18,6 +18,7 @@ import { UserModule } from './modules/user/user.module';
 import { ProjectModule } from './modules/project/project.module';
 import { ScriptModule } from './modules/script/script.module';
 import { FakeDataModule } from './modules/fake-data/fake-data.module';
+import { ProjectSubscriberModule } from './modules/project-subscriber/project-subscriber.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { FakeDataModule } from './modules/fake-data/fake-data.module';
     ProjectModule,
     ScriptModule,
     FakeDataModule,
+    ProjectSubscriberModule,
   ],
   controllers: [],
   providers: [
