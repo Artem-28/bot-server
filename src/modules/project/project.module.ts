@@ -6,9 +6,7 @@ import { Script } from '../script/script.entity';
 import { Project } from './project.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Project, Script]),
-  ],
+  imports: [TypeOrmModule.forFeature([Project, Script])],
   providers: [ProjectService],
   controllers: [ProjectController],
 })

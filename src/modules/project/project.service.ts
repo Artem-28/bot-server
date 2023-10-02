@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './project.entity';
+import { User } from '../user/user.entity';
 import {
   DeleteQueryBuilder,
   Repository,
@@ -63,7 +64,7 @@ export class ProjectService {
   }
 
   // Обработка обновления проекта
-  async updateProjectHandle(
+  public async updateProjectHandle(
     projectId: number,
     payload: Partial<CreateProjectDto>,
     filters: IFilterQueryBuilder[] = [],
@@ -76,7 +77,7 @@ export class ProjectService {
   }
 
   // Обработка удаления проекта
-  async removeProjectHandle(
+  public async removeProjectHandle(
     projectId: number,
     filters: IFilterQueryBuilder[] = [],
   ): Promise<void> {
@@ -87,13 +88,19 @@ export class ProjectService {
   }
 
   // Создание нового проекта
-  async create(userId: number, payload: CreateProjectDto) {
-    const response = await this._projectRepository.save({ userId, ...payload });
+  public async create(userId: number, payload: CreateProjectDto) {
+    // const project = new Project(payload);
+    // project.user = user;
+    // const response = await this._projectRepository.save(project);
+    const response = await this._projectRepository.save({
+      userId,
+      ...payload,
+    });
     return new Project(response);
   }
 
   // Получение всех проектов пользователя
-  async getListByUserId(userId: number): Promise<Project[]> {
+  public async getListByUserId(userId: number): Promise<Project[]> {
     return await this._projectRepository
       .createQueryBuilder('project')
       .where({ userId })
@@ -101,21 +108,51 @@ export class ProjectService {
   }
 
   // Получение проекта по id
-  async getById(
+  public async getById(
     projectId: number,
     filters: IFilterQueryBuilder[] = [],
   ): Promise<Project | null> {
-    const rootQuery = this._projectRepository.createQueryBuilder();
+    const rootQuery = this._projectRepository.createQueryBuilder('project');
     filters.push({ field: 'id', value: projectId });
 
     const query = whereQueryBuilder(
       rootQuery,
       filters,
     ) as SelectQueryBuilder<Project>;
-
     const response = await query.getOne();
 
     if (!response) return null;
     return new Project(response);
+  }
+
+  // Получение колличества записей Project в бд
+  public async getCountOfProjects(
+    filters: IFilterQueryBuilder[] = [],
+  ): Promise<number> {
+    const rootQuery = this._projectRepository.createQueryBuilder();
+    const query = whereQueryBuilder(
+      rootQuery,
+      filters,
+    ) as SelectQueryBuilder<Project>;
+    console.log(filters);
+    return await query.getCount();
+  }
+
+  // Проверка прав пользователя для проекта
+  public async checkPermissionProject(
+    projectId: number,
+    user: User,
+    throwException: boolean = false,
+  ): Promise<boolean> {
+    const filters: IFilterQueryBuilder[] = [
+      { field: 'id', value: projectId },
+      { field: 'userId', value: user.id },
+    ];
+    const count = await this.getCountOfProjects(filters);
+    const check = !!count;
+    if (throwException && !check) {
+      throw new HttpException('base.permission_denied', 403);
+    }
+    return check;
   }
 }

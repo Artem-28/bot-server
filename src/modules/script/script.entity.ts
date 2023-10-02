@@ -1,15 +1,23 @@
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../base/entities/base.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
 import { Project } from '../project/project.entity';
 
 @Entity({ name: 'scripts' })
 export class Script extends BaseEntity {
-  @Column({ name: 'project_id' })
-  projectId: number;
-
   @Column()
   title: string;
 
-  @ManyToOne(() => Project, (project) => project.scripts)
+  @Column({ name: 'project_id', nullable: true })
+  projectId: number;
+
+  @ManyToOne(() => Project, (project) => project.scripts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'project_id' })
   project: Project;
+
+  constructor(partial: Partial<Project>) {
+    super();
+    Object.assign(this, partial);
+  }
 }

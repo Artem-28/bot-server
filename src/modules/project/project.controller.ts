@@ -24,8 +24,7 @@ export class ProjectController {
   @Post()
   async create(@Req() req, @Body() body: CreateProjectDto): Promise<Project> {
     try {
-      const userId = req.user.id;
-      return await this.projectService.create(userId, body);
+      return await this.projectService.create(req.user.id, body);
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -66,7 +65,7 @@ export class ProjectController {
   ) {
     try {
       const id = params.id;
-      const filters = [{ field: 'userId', value: 3 }];
+      const filters = [{ field: 'userId', value: req.user.id }];
       return await this.projectService.updateProjectHandle(id, body, filters);
     } catch (e) {
       throw new HttpException(e.response, e.status);

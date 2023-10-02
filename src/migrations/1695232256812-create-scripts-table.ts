@@ -39,13 +39,13 @@ export class CreateScriptsTable1695232256812 implements MigrationInterface {
     const table = new Table({ name: 'scripts', columns });
     await queryRunner.createTable(table, true);
 
-    const userForeignKey = new TableForeignKey({
+    const projectForeignKey = new TableForeignKey({
       columnNames: ['project_id'],
       referencedColumnNames: ['id'],
       referencedTableName: 'projects',
       onDelete: 'CASCADE',
     });
-    await queryRunner.createForeignKey('scripts', userForeignKey);
+    await queryRunner.createForeignKey('scripts', projectForeignKey);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
