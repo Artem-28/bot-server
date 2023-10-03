@@ -1,6 +1,6 @@
 import { IsEmail, IsInt } from 'class-validator';
 
-export class CreateProjectSubscriberDto {
+export class SubscribeProjectDto {
   @IsInt()
   projectId: number;
 

@@ -44,4 +44,9 @@ export class User extends BaseEntity {
     super();
     Object.assign(this, partial);
   }
+
+  public get projectIds(): number[] {
+    if (!this.projects) return [];
+    return this.projects.map((project) => project.id);
+  }
 }
