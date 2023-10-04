@@ -16,8 +16,7 @@ import { JwtStrategy } from './passport/strategies/jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([ConfirmationCode]),
+    TypeOrmModule.forFeature([User, ConfirmationCode]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

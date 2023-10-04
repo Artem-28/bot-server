@@ -230,6 +230,15 @@ export class ProjectSubscriberService {
     return this._formatterSubscribers(projectSubscribers);
   }
 
+  public async getSubscribeProjects(userId: number): Promise<Project[]> {
+    const projectSubscribers = await this._subscriberRepository
+      .createQueryBuilder('projectSubscriber')
+      .innerJoinAndSelect('projectSubscriber.project', 'project')
+      .where('projectSubscriber.userId = :userId', { userId })
+      .getMany();
+    return projectSubscribers.map((subscribe) => subscribe.formatProject);
+  }
+
   // Получение списка подписчиков для проекта
   public async getSubscribersByProject(
     authUser: User,
@@ -253,6 +262,6 @@ export class ProjectSubscriberService {
       .where('projectSubscriber.projectId = :projectId', { projectId })
       .getMany();
     // Форматирование ответа
-    return projectSubscribers.map((subscriber) => subscriber.formatUser);
+    return projectSubscribers.map((subscribe) => subscribe.formatUser);
   }
 }

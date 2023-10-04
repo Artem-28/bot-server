@@ -39,13 +39,16 @@ export class ProjectSubscriber extends BaseEntity {
     return response;
   }
 
-  public get formatProject() {
-    const response: IResponseSubscriberProject = {
+  public get formatProject(): Project {
+    const project = new Project({
       id: this.projectId,
       subscriptionAt: this.createdAt,
-    };
-    if (!this.project) return response;
-    response.title = this.project.title;
-    return response;
+    });
+    if (!this.project) return project;
+    project.title = this.project.title;
+    project.createdAt = this.project.createdAt;
+    project.updatedAt = this.project.updatedAt;
+    project.userId = this.project.userId;
+    return project;
   }
 }

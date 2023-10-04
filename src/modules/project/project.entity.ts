@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../base/entities/base.entity';
 import { Script } from '../script/script.entity';
 import { User } from '../user/user.entity';
@@ -46,6 +38,11 @@ export class Project extends BaseEntity {
   //   },
   // })
   // subscribers: User[];
+  public subscriptionAt: Date | null = null;
+
+  // get subscribeAt() {
+  //   return this._subscribeAt;
+  // }
 
   constructor(partial: Partial<Project>) {
     super();

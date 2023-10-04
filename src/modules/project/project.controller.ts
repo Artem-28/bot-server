@@ -9,15 +9,22 @@ import {
   Param,
   Patch,
   Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  Query,
 } from '@nestjs/common';
 import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectService } from './project.service';
 import { Project } from './project.entity';
+import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
 
 @Controller('project')
 export class ProjectController {
-  constructor(readonly projectService: ProjectService) {}
+  constructor(
+    readonly projectService: ProjectService,
+    readonly projectSubscriberService: ProjectSubscriberService,
+  ) {}
 
   // Создание проекта
   @UseGuards(AuthJwtGuard)
@@ -30,13 +37,29 @@ export class ProjectController {
     }
   }
 
-  // Получение списка проектов авторизованного пользователя
+  // Получение списка проектов пользователя и проектов на которые он подписан
   @UseGuards(AuthJwtGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async list(@Req() req) {
+  async availableProjects(@Req() req, @Query() query): Promise<Project[]> {
     try {
+      const { onlyOwner, onlySubscriber } = query;
+      const isLoadAll = !onlyOwner && !onlySubscriber;
       const userId = req.user.id;
-      return await this.projectService.getListByUserId(userId);
+      const projects: Project[] = [];
+      // Если нужно загрузить все проекты или только которые создал пользователь
+      if (isLoadAll || onlyOwner) {
+        const ownerProjects =
+          await this.projectService.getProjectsByUserId(userId);
+        projects.push(...ownerProjects);
+      }
+      // Если нужно загрузить все проекты или только на которые подписан пользователь
+      if (isLoadAll || onlySubscriber) {
+        const subscribeProjects =
+          await this.projectSubscriberService.getSubscribeProjects(userId);
+        projects.push(...subscribeProjects);
+      }
+      return projects;
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -44,6 +67,7 @@ export class ProjectController {
 
   // Получение подробной информации по проекту
   @UseGuards(AuthJwtGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async info(@Req() req, @Param() params: any) {
     try {

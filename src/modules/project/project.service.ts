@@ -14,6 +14,7 @@ import {
   IFilterQueryBuilder,
   whereQueryBuilder,
 } from '../../base/helpers/where-query-builder';
+import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
 
 @Injectable()
 export class ProjectService {
@@ -100,7 +101,7 @@ export class ProjectService {
   }
 
   // Получение всех проектов пользователя
-  public async getListByUserId(userId: number): Promise<Project[]> {
+  public async getProjectsByUserId(userId: number): Promise<Project[]> {
     return await this._projectRepository
       .createQueryBuilder('project')
       .where({ userId })
