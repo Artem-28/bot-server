@@ -17,7 +17,7 @@ import {
   IResponseSubscriberUser,
 } from './interfaces/response-project-subscriber.interface';
 
-@Controller('project-subscriber')
+@Controller('project-subscribers')
 export class ProjectSubscriberController {
   constructor(readonly projectSubscriberService: ProjectSubscriberService) {}
 

@@ -12,7 +12,7 @@ import { ScriptService } from './script.service';
 import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
 import { CreateScriptDto } from './dto/create-script.dto';
 
-@Controller('project/:projectId/script')
+@Controller('projects/:projectId/scripts')
 export class ScriptController {
   constructor(readonly scriptService: ScriptService) {}
 
@@ -24,9 +24,10 @@ export class ScriptController {
     @Body() createScriptDto: CreateScriptDto,
   ) {
     try {
-      createScriptDto.projectId = Number(param.projectId);
+      const projectId = Number(param.projectId);
       return await this.scriptService.createScriptHandle(
         req.user,
+        projectId,
         createScriptDto,
       );
     } catch (e) {

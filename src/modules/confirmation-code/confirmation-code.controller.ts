@@ -6,7 +6,7 @@ import { ConfirmationCodeService } from './confirmation-code.service';
 import { CreateConfirmationCodeDto } from './dto/create-confirmation-code.dto';
 import { CheckConfirmationCodeDto } from './dto/check-confirmation-code.dto';
 
-@Controller('confirmation-code')
+@Controller('confirmation-codes')
 export class ConfirmationCodeController {
   constructor(
     readonly confirmationCodeService: ConfirmationCodeService,

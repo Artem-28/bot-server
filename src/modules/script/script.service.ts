@@ -21,14 +21,12 @@ export class ScriptService {
   }
 
   // Обработка создания скрипта
-  public async createScriptHandle(user: User, payload: CreateScriptDto) {
+  public async createScriptHandle(
+    user: User,
+    projectId: number,
+    payload: CreateScriptDto,
+  ) {
     // Проверка прав пользователя для создания скрипта в конкретном проекте
-    await this._projectService.checkPermissionProject(
-      payload.projectId,
-      user,
-      true,
-    );
-    return await this._create(payload);
   }
 
   public async getScriptsByProjectId(userId: number, projectId) {

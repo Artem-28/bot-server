@@ -19,7 +19,7 @@ import { ProjectService } from './project.service';
 import { Project } from './project.entity';
 import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
 
-@Controller('project')
+@Controller('projects')
 export class ProjectController {
   constructor(
     readonly projectService: ProjectService,
