@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { BaseEntity } from '../../base/entities/base.entity';
 import { Project } from '../project/project.entity';
@@ -35,7 +35,7 @@ export class User extends BaseEntity {
     () => ProjectSubscriber,
     (projectSubscriber) => projectSubscriber.user,
   )
-  public subscribedProjects: Project[];
+  public subscribedProjects: ProjectSubscriber[];
 
   // @ManyToMany(() => Project, (project) => project.subscribers)
   // subscribedProjects: Project[];
@@ -48,5 +48,10 @@ export class User extends BaseEntity {
   public get projectIds(): number[] {
     if (!this.projects) return [];
     return this.projects.map((project) => project.id);
+  }
+
+  public get subscribedProjectIds(): number[] {
+    if (!this.subscribedProjects) return [];
+    return this.subscribedProjects.map((project) => project.projectId);
   }
 }
