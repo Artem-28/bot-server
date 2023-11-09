@@ -13,14 +13,22 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { ProjectService } from './project.service';
-import { Project } from './project.entity';
-import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
-import { Permission } from '../check-permission/decorators/permission.decorator';
-import { PermissionEnum } from '../../base/enum/permission/permission.enum';
+
+// Guards
 import { PermissionGuard } from '../check-permission/guards/permission.guard';
+import { Permission } from '../check-permission/decorators/permission.decorator';
+import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
+
+// Service
+import { ProjectService } from './project.service';
+import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
+
+// Entity
+import { Project } from './project.entity';
+
+// Types
+import { CreateProjectDto } from './dto/create-project.dto';
+import { PermissionEnum } from '../../base/enum/permission/permission.enum';
 
 @Controller('projects')
 @UseGuards(AuthJwtGuard)
@@ -32,9 +40,10 @@ export class ProjectController {
 
   // Создание проекта
   @Post()
-  async create(@Req() req, @Body() body: CreateProjectDto) {
+  async create(@Req() req, @Body() body: CreateProjectDto): Promise<Project> {
     try {
-      return await this.projectService.create(req.user.id, body);
+      body.userId = req.user.id;
+      return await this.projectService.createProjectHandle(body);
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -42,7 +51,6 @@ export class ProjectController {
 
   // Получение списка проектов пользователя и проектов на которые он подписан
   @Get()
-  @UseInterceptors(ClassSerializerInterceptor)
   async availableProjects(@Req() req, @Query() query): Promise<Project[]> {
     try {
       const { onlyOwner, onlySubscriber } = query;
@@ -51,8 +59,9 @@ export class ProjectController {
       const projects: Project[] = [];
       // Если нужно загрузить все проекты или только которые создал пользователь
       if (isLoadAll || onlyOwner) {
-        const ownerProjects =
-          await this.projectService.getProjectsByUserId(userId);
+        const ownerProjects = await this.projectService
+          .getHandle()
+          .projectsByUserId(userId);
         projects.push(...ownerProjects);
       }
       // Если нужно загрузить все проекты или только на которые подписан пользователь
@@ -70,16 +79,12 @@ export class ProjectController {
   // Получение подробной информации по проекту
   @Get(':projectId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
-    'or',
-  )
-  @UseInterceptors(ClassSerializerInterceptor)
+  @Permission(PermissionEnum.PROJECT_ACCESS)
   async info(@Req() req, @Param() params: any) {
     try {
-      const id = params.projectId;
-      const filters = [{ field: 'userId', value: req.user.id }];
-      return await this.projectService.getById(id, filters);
+      return await this.projectService
+        .getHandle()
+        .projectById(params.projectId);
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -99,8 +104,13 @@ export class ProjectController {
   ) {
     try {
       const id = params.projectId;
-      const filters = [{ field: 'userId', value: req.user.id }];
-      return await this.projectService.updateProjectHandle(id, body, filters);
+      const handle = await this.projectService.updateHandle(id, body);
+      return await handle.getProject();
+      // return await this.projectService
+      //   .updateHandle(id, body)
+      //   .catch((handle) => handle.getProject());
+      // const filters = [{ field: 'userId', value: req.user.id }];
+      // return await this.projectService.updateProjectHandle(id, body, filters);
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }

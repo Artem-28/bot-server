@@ -21,12 +21,21 @@ export class CheckPermissionService {
     return user.subscribedProjectIds.includes(projectId);
   }
 
+  private _checkProjectAccess(user: User, projectId: number): boolean {
+    return (
+      this._checkProjectOwner(user, projectId) ||
+      this._checkProjectSubscriber(user, projectId)
+    );
+  }
+
   private _checkPermission(
     user: User,
     permission: PermissionEnum,
     params: HttpParams,
   ) {
     switch (permission) {
+      case PermissionEnum.PROJECT_ACCESS:
+        return this._checkProjectAccess(user, params.projectId);
       case PermissionEnum.PROJECT_OWNER:
         return this._checkProjectOwner(user, params.projectId);
       case PermissionEnum.PROJECT_SUBSCRIBER:
@@ -40,6 +49,13 @@ export class CheckPermissionService {
     const rootQuery = this._userRepository.createQueryBuilder('user');
     permissions.forEach((permission) => {
       switch (permission) {
+        case PermissionEnum.PROJECT_ACCESS:
+          rootQuery
+            .leftJoin('user.subscribedProjects', 'subscribedProject')
+            .addSelect('subscribedProject.projectId')
+            .leftJoin('user.projects', 'project')
+            .addSelect('project.id');
+          break;
         case PermissionEnum.PROJECT_SUBSCRIBER:
           rootQuery
             .leftJoin('user.subscribedProjects', 'subscribedProject')

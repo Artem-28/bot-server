@@ -3,6 +3,12 @@ import { SetMetadata } from '@nestjs/common';
 import { TPermissionOperator } from '../dto/check-permission.dto';
 
 export const Permission = (
-  permissions: PermissionEnum[],
+  permissions: PermissionEnum[] | PermissionEnum,
   operator: TPermissionOperator = 'and',
-) => SetMetadata('permissions', { permissions, operator });
+) => {
+  const meta = {
+    permissions: Array.isArray(permissions) ? permissions : [permissions],
+    operator,
+  };
+  return SetMetadata('permissions', meta);
+};

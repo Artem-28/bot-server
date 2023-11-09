@@ -2,7 +2,6 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './project.entity';
-import { User } from '../user/user.entity';
 import {
   DeleteQueryBuilder,
   Repository,
@@ -14,7 +13,12 @@ import {
   IFilterQueryBuilder,
   whereQueryBuilder,
 } from '../../base/helpers/where-query-builder';
-import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
+import { QueryHandler } from '../../base/helpers/QueryHandler';
+import {
+  IProjectGetQueryHandle,
+  IProjectGetQueryMethods,
+  IProjectUpdateQueryHandle,
+} from './interfaces/query-helper';
 
 @Injectable()
 export class ProjectService {
@@ -22,6 +26,12 @@ export class ProjectService {
     @InjectRepository(Project)
     private readonly _projectRepository: Repository<Project>,
   ) {}
+
+  // Создание нового проекта
+  private async _create(dto: CreateProjectDto) {
+    const response = await this._projectRepository.save(dto);
+    return new Project(response);
+  }
 
   // Обновление проекта
   private async _update(
@@ -88,18 +98,6 @@ export class ProjectService {
     }
   }
 
-  // Создание нового проекта
-  public async create(userId: number, payload: CreateProjectDto) {
-    // const project = new Project(payload);
-    // project.user = user;
-    // const response = await this._projectRepository.save(project);
-    const response = await this._projectRepository.save({
-      userId,
-      ...payload,
-    });
-    return new Project(response);
-  }
-
   // Получение всех проектов пользователя
   public async getProjectsByUserId(userId: number): Promise<Project[]> {
     return await this._projectRepository
@@ -126,34 +124,62 @@ export class ProjectService {
     return new Project(response);
   }
 
-  // Получение колличества записей Project в бд
-  public async getCountOfProjects(
-    filters: IFilterQueryBuilder[] = [],
-  ): Promise<number> {
-    const rootQuery = this._projectRepository.createQueryBuilder();
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as SelectQueryBuilder<Project>;
-    console.log(filters);
-    return await query.getCount();
+  // Обработка создания проекта
+  public async createProjectHandle(dto: CreateProjectDto): Promise<Project> {
+    return await this._create(dto);
   }
 
-  // Проверка прав пользователя для проекта
-  public async checkPermissionProject(
+  private async _byId(
+    id: number,
+    queryHandler: IProjectGetQueryHandle | IProjectUpdateQueryHandle,
+  ): Promise<Project> {
+    const filter = { field: 'id', value: id };
+    const builder = queryHandler.filter(filter).builder;
+    const response = await builder.getOne();
+
+    if (!response) return null;
+    return new Project(response);
+  }
+
+  private async _byUserId(
+    userId: number,
+    queryHandler: IProjectGetQueryHandle,
+  ): Promise<Project[]> {
+    const filter = { field: 'userId', value: userId };
+    const builder = queryHandler.filter(filter).builder;
+    return await builder.getMany();
+  }
+
+  private async _updateProject(
+    queryHandler: IProjectUpdateQueryHandle,
+    payload: Partial<CreateProjectDto>,
+  ) {
+    const builder = queryHandler.builder.update().set(payload);
+    const response = await builder.execute();
+    return !!response.affected;
+  }
+
+  public getHandle() {
+    const methods: IProjectGetQueryMethods = {
+      projectById: (id: number) => this._byId(id, queryHandler),
+      projectsByUserId: (id: number) => this._byUserId(id, queryHandler),
+    };
+    const queryHandler = new QueryHandler(this._projectRepository, methods);
+
+    return queryHandler.methods;
+  }
+
+  public async updateHandle(
     projectId: number,
-    user: User,
-    throwException: boolean = false,
-  ): Promise<boolean> {
-    const filters: IFilterQueryBuilder[] = [
-      { field: 'id', value: projectId },
-      { field: 'userId', value: user.id },
-    ];
-    const count = await this.getCountOfProjects(filters);
-    const check = !!count;
-    if (throwException && !check) {
-      throw new HttpException('base.permission_denied', 403);
-    }
-    return check;
+    payload: Partial<CreateProjectDto>,
+  ) {
+    const methods = {
+      getProject: () => queryHandler.builder.getOne(),
+    };
+    const filter = { field: 'id', value: projectId };
+    const queryHandler = new QueryHandler(this._projectRepository, methods);
+    queryHandler.filter(filter);
+    await this._updateProject(queryHandler, payload);
+    return queryHandler.methods;
   }
 }
