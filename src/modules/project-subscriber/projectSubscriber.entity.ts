@@ -2,10 +2,6 @@ import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { BaseEntity } from '../../base/entities/base.entity';
 import { User } from '../user/user.entity';
 import { Project } from '../project/project.entity';
-import {
-  IResponseSubscriberProject,
-  IResponseSubscriberUser,
-} from './interfaces/response-project-subscriber.interface';
 
 @Entity({ name: 'project_users' })
 @Unique(['project', 'user'])
@@ -29,14 +25,14 @@ export class ProjectSubscriber extends BaseEntity {
     Object.assign(this, partial);
   }
 
-  public get formatUser(): IResponseSubscriberUser {
-    const response: IResponseSubscriberUser = {
+  public get formatUser(): User {
+    const user = new User({
       id: this.userId,
       subscriptionAt: this.createdAt,
-    };
-    if (!this.user) return response;
-    response.email = this.user.email;
-    return response;
+    });
+    if (!this.user) return user;
+    user.email = this.user.email;
+    return user;
   }
 
   public get formatProject(): Project {

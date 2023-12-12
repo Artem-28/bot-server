@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -11,7 +10,6 @@ import {
   Query,
   Req,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 
 // Guards
@@ -29,6 +27,7 @@ import { Project } from './project.entity';
 // Types
 import { CreateProjectDto } from './dto/create-project.dto';
 import { PermissionEnum } from '../../base/enum/permission/permission.enum';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Controller('projects')
 @UseGuards(AuthJwtGuard)
@@ -42,8 +41,10 @@ export class ProjectController {
   @Post()
   async create(@Req() req, @Body() body: CreateProjectDto): Promise<Project> {
     try {
-      body.userId = req.user.id;
-      return await this.projectService.createProjectHandle(body);
+      const dto = { ...body, userId: req.user.id };
+      return await this.projectService.createProject(dto, {
+        throwException: true,
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -59,15 +60,17 @@ export class ProjectController {
       const projects: Project[] = [];
       // Если нужно загрузить все проекты или только которые создал пользователь
       if (isLoadAll || onlyOwner) {
-        const ownerProjects = await this.projectService
-          .getHandle()
-          .projectsByUserId(userId);
+        const ownerProjects = await this.projectService.getProjects({
+          filter: { field: 'userId', value: userId },
+        });
         projects.push(...ownerProjects);
       }
       // Если нужно загрузить все проекты или только на которые подписан пользователь
       if (isLoadAll || onlySubscriber) {
         const subscribeProjects =
-          await this.projectSubscriberService.getSubscribeProjects(userId);
+          await this.projectSubscriberService.getSubscribeProjects({
+            filter: { field: 'userId', value: userId },
+          });
         projects.push(...subscribeProjects);
       }
       return projects;
@@ -79,12 +82,15 @@ export class ProjectController {
   // Получение подробной информации по проекту
   @Get(':projectId')
   @UseGuards(PermissionGuard)
-  @Permission(PermissionEnum.PROJECT_ACCESS)
+  @Permission(
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_VIEW],
+    'or',
+  )
   async info(@Req() req, @Param() params: any) {
     try {
-      return await this.projectService
-        .getHandle()
-        .projectById(params.projectId);
+      return await this.projectService.getOneProject({
+        filter: { field: 'id', value: params.projectId },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -94,23 +100,24 @@ export class ProjectController {
   @Patch(':projectId')
   @UseGuards(PermissionGuard)
   @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_UPDATE],
     'or',
   )
   async update(
     @Req() req,
     @Param() params: any,
-    @Body() body: Partial<CreateProjectDto>,
+    @Body() body: UpdateProjectDto,
   ) {
     try {
       const id = params.projectId;
-      const handle = await this.projectService.updateHandle(id, body);
-      return await handle.getProject();
-      // return await this.projectService
-      //   .updateHandle(id, body)
-      //   .catch((handle) => handle.getProject());
-      // const filters = [{ field: 'userId', value: req.user.id }];
-      // return await this.projectService.updateProjectHandle(id, body, filters);
+      // Обновляем проект
+      await this.projectService.updateProject(id, body, {
+        throwException: true,
+      });
+      // Получаем обновленный проект
+      return await this.projectService.getOneProject({
+        filter: { field: 'id', value: id },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -120,14 +127,31 @@ export class ProjectController {
   @Delete(':projectId')
   @UseGuards(PermissionGuard)
   @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_DELETE],
     'or',
   )
   async remove(@Req() req, @Param() params) {
     try {
       const id = params.projectId;
-      const filters = [{ field: 'userId', value: req.user.id }];
-      await this.projectService.removeProjectHandle(id, filters);
+      await this.projectService.removeProject(id, { throwException: true });
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
+  }
+
+  // Получение скриптов у проекта
+  @UseGuards(PermissionGuard)
+  @Permission(
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_VIEW],
+    'or',
+  )
+  @Get(':projectId/scripts')
+  async getProjectScripts(@Req() req, @Param() params) {
+    try {
+      return await this.projectService.getOneProject({
+        filter: { field: 'id', value: params.projectId },
+        relation: { name: 'scripts' },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }

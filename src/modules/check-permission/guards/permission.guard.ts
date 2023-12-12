@@ -27,8 +27,12 @@ export class PermissionGuard implements CanActivate {
     const body = request.body;
     const httpParams = {} as HttpParams;
     const projectId = params.projectId || body.projectId;
+    const userId = params.userId || body.userId;
     if (projectId) {
       httpParams.projectId = Number(projectId);
+    }
+    if (userId) {
+      httpParams.userId = Number(userId);
     }
     return httpParams;
   }

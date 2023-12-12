@@ -23,10 +23,6 @@ export class ScriptController {
   constructor(readonly scriptService: ScriptService) {}
 
   @Get()
-  @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
-    'or',
-  )
   public async list(@Param() param) {
     try {
       const projectId = Number(param.projectId);
@@ -37,28 +33,20 @@ export class ScriptController {
   }
 
   @Post()
-  @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
-    'or',
-  )
   public async create(
     @Req() req,
     @Param() param,
-    @Body() createScriptDto: CreateScriptDto,
+    @Body() body: CreateScriptDto,
   ) {
     try {
-      createScriptDto.projectId = Number(param.projectId);
-      return await this.scriptService.createScriptHandle(createScriptDto);
+      const dto = { ...body, projectId: Number(param.projectId) };
+      return await this.scriptService.createScript(dto);
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
   }
 
   @Patch(':scriptId')
-  @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
-    'or',
-  )
   public async update(
     @Req() req,
     @Param() param,
@@ -74,10 +62,6 @@ export class ScriptController {
   }
 
   @Delete(':scriptId')
-  @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
-    'or',
-  )
   public async remove(@Req() req, @Param() param) {
     try {
       const scriptId = Number(param.scriptId);

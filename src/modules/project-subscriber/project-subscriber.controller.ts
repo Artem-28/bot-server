@@ -8,22 +8,33 @@ import {
   Get,
   Param,
 } from '@nestjs/common';
-import { ProjectSubscriberService } from './project-subscriber.service';
+
+// Guards
+import { PermissionGuard } from '../check-permission/guards/permission.guard';
+import { Permission } from '../check-permission/decorators/permission.decorator';
 import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
+
+// Service
+import { ProjectSubscriberService } from './project-subscriber.service';
+
+// Entity
+import { User } from '../user/user.entity';
+
+// Types
 import { SubscribeProjectDto } from './dto/subscribe-project.dto';
 import { SearchProjectSubscriberDto } from './dto/search-project-subscriber.dto';
-import {
-  IResponseCombineUserSubscriber,
-  IResponseSubscriberUser,
-} from './interfaces/response-project-subscriber.interface';
+import { IResponseCombineUserSubscriber } from './interfaces/response-project-subscriber.interface';
+import { PermissionEnum } from '../../base/enum/permission/permission.enum';
 
 @Controller('project-subscribers')
+@UseGuards(AuthJwtGuard)
 export class ProjectSubscriberController {
   constructor(readonly projectSubscriberService: ProjectSubscriberService) {}
 
   // Добавление нового подписчика в проект
-  @UseGuards(AuthJwtGuard)
   @Post('/subscribe')
+  @UseGuards(PermissionGuard)
+  @Permission(PermissionEnum.PROJECT_SUBSCRIBE)
   public async subscribe(
     @Req() req,
     @Body() body: SubscribeProjectDto,
@@ -32,7 +43,9 @@ export class ProjectSubscriberController {
       const user = req.user;
       // Добавляем пользователя в проект
       const projectSubscriber =
-        await this.projectSubscriberService.subscribeUserToProject(user, body);
+        await this.projectSubscriberService.subscribeUserToProject(body, {
+          throwException: true,
+        });
       // Получаем подписчика и все проекты на которые он подписан
       return await this.projectSubscriberService.getSubscriber(
         user,
@@ -44,17 +57,23 @@ export class ProjectSubscriberController {
   }
 
   // Отписать пользователя или отписаться самому
-  @UseGuards(AuthJwtGuard)
   @Post('/unsubscribe')
+  @UseGuards(PermissionGuard)
+  @Permission(PermissionEnum.PROJECT_UNSUBSCRIBE)
   public async unsubscribe(
     @Req() req,
     @Body() body: SearchProjectSubscriberDto,
-  ): Promise<boolean> {
+  ): Promise<IResponseCombineUserSubscriber> {
     try {
       const user = req.user;
-      return await this.projectSubscriberService.unsubscribeUserFromProject(
+      // Отписываемся от проекта
+      await this.projectSubscriberService.unsubscribeUserFromProject(body, {
+        throwException: true,
+      });
+      // Получаем подписчика и все проекты на которые он подписан
+      return await this.projectSubscriberService.getSubscriber(
         user,
-        body,
+        body.userId,
       );
     } catch (e) {
       throw new HttpException(e.response, e.status);
@@ -62,7 +81,6 @@ export class ProjectSubscriberController {
   }
 
   // Получение всех подписчиков авторизованного пользователя
-  @UseGuards(AuthJwtGuard)
   @Get()
   public async list(@Req() req): Promise<IResponseCombineUserSubscriber[]> {
     try {
@@ -73,17 +91,14 @@ export class ProjectSubscriberController {
   }
 
   // Получчение подписчиков для проекта
-  @UseGuards(AuthJwtGuard)
   @Get('/project/:projectId')
-  public async getByProject(
-    @Req() req,
-    @Param() param,
-  ): Promise<IResponseSubscriberUser[]> {
+  @UseGuards(PermissionGuard)
+  @Permission(PermissionEnum.PROJECT_SUBSCRIBERS_VIEW)
+  public async getByProject(@Req() req, @Param() param): Promise<User[]> {
     try {
-      return await this.projectSubscriberService.getSubscribersByProject(
-        req.user,
-        param.projectId,
-      );
+      return await this.projectSubscriberService.getSubscribeUsers({
+        filter: { field: 'projectId', value: param.projectId },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }

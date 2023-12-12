@@ -16,7 +16,7 @@ export class Script extends BaseEntity {
   @JoinColumn({ name: 'project_id' })
   project: Project;
 
-  constructor(partial: Partial<Project>) {
+  constructor(partial: Partial<Script>) {
     super();
     Object.assign(this, partial);
   }

@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../user/user.entity';
-import { CheckPermissionDto } from './dto/check-permission.dto';
-import { PermissionEnum } from '../../base/enum/permission/permission.enum';
-import { HttpParams } from '../../base/interfaces/http.interface';
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
+import {User} from '../user/user.entity';
+import {CheckPermissionDto} from './dto/check-permission.dto';
+import {PermissionEnum} from '../../base/enum/permission/permission.enum';
+import {HttpParams} from '../../base/interfaces/http.interface';
+import QueryBuilderHelper from '../../base/helpers/query-builder-helper';
 
 @Injectable()
 export class CheckPermissionService {
@@ -13,19 +14,22 @@ export class CheckPermissionService {
     private readonly _userRepository: Repository<User>,
   ) {}
 
-  private _checkProjectOwner(user: User, projectId: number): boolean {
+  private _checkProjectAccess(user: User, projectId: number): boolean {
     return user.projectIds.includes(projectId);
   }
 
-  private _checkProjectSubscriber(user: User, projectId: number): boolean {
-    return user.subscribedProjectIds.includes(projectId);
+  private _checkProjectView(user: User, projectId: number): boolean {
+    return (
+      user.subscribedProjectIds.includes(projectId) ||
+      user.projectIds.includes(projectId)
+    );
   }
 
-  private _checkProjectAccess(user: User, projectId: number): boolean {
-    return (
-      this._checkProjectOwner(user, projectId) ||
-      this._checkProjectSubscriber(user, projectId)
-    );
+  private _checkProjectUnsubscribe(user, params: HttpParams): boolean {
+    // авторизованый пользователь является владельцем проекта
+    const isOwner = user.projectIds.includes(params.projectId);
+    // или хочет отписаться сам
+    return isOwner || user.id === params.userId;
   }
 
   private _checkPermission(
@@ -35,39 +39,44 @@ export class CheckPermissionService {
   ) {
     switch (permission) {
       case PermissionEnum.PROJECT_ACCESS:
+      case PermissionEnum.PROJECT_DELETE:
+      case PermissionEnum.PROJECT_CREATE:
+      case PermissionEnum.PROJECT_UPDATE:
+      case PermissionEnum.PROJECT_SUBSCRIBE:
+      case PermissionEnum.PROJECT_SUBSCRIBERS_VIEW:
         return this._checkProjectAccess(user, params.projectId);
-      case PermissionEnum.PROJECT_OWNER:
-        return this._checkProjectOwner(user, params.projectId);
-      case PermissionEnum.PROJECT_SUBSCRIBER:
-        return this._checkProjectSubscriber(user, params.projectId);
+      case PermissionEnum.PROJECT_VIEW:
+        return this._checkProjectView(user, params.projectId);
+      case PermissionEnum.PROJECT_UNSUBSCRIBE:
+        return this._checkProjectUnsubscribe(user, params);
       default:
         return false;
     }
   }
 
   private async _loadRelations(user: User, permissions: PermissionEnum[]) {
-    const rootQuery = this._userRepository.createQueryBuilder('user');
+    const queryHelper = new QueryBuilderHelper(this._userRepository, {
+      filter: { field: 'id', value: user.id },
+    });
     permissions.forEach((permission) => {
       switch (permission) {
         case PermissionEnum.PROJECT_ACCESS:
-          rootQuery
-            .leftJoin('user.subscribedProjects', 'subscribedProject')
-            .addSelect('subscribedProject.projectId')
-            .leftJoin('user.projects', 'project')
-            .addSelect('project.id');
+        case PermissionEnum.PROJECT_DELETE:
+        case PermissionEnum.PROJECT_CREATE:
+        case PermissionEnum.PROJECT_UPDATE:
+        case PermissionEnum.PROJECT_SUBSCRIBE:
+        case PermissionEnum.PROJECT_UNSUBSCRIBE:
+        case PermissionEnum.PROJECT_SUBSCRIBERS_VIEW:
+          queryHelper.relation({ name: 'projects', select: 'id' });
           break;
-        case PermissionEnum.PROJECT_SUBSCRIBER:
-          rootQuery
-            .leftJoin('user.subscribedProjects', 'subscribedProject')
-            .addSelect('subscribedProject.projectId');
-          break;
-        case PermissionEnum.PROJECT_OWNER:
-          rootQuery
-            .leftJoin('user.projects', 'project')
-            .addSelect('project.id');
+        case PermissionEnum.PROJECT_VIEW:
+          queryHelper.relation([
+            { name: 'projects', select: 'id' },
+            { name: 'subscribedProjects', select: 'projectId' },
+          ]);
       }
     });
-    return await rootQuery.where('user.id = :id', { id: user.id }).getOne();
+    return queryHelper.builder.getOne();
   }
 
   public async check(

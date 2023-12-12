@@ -14,10 +14,17 @@ type Methods = IProjectGetQueryMethods | IProjectUpdateQueryMethods;
 export class QueryHandler<T extends Entity, D extends Methods> {
   private readonly _builder: SelectQueryBuilder<T>;
   private readonly _alias = 'entity';
-  private readonly _methods: D | null = null;
-  constructor(repository: Repository<T>, methods: D | null = null) {
+  private readonly _methods: D;
+  constructor(repository: Repository<T>, methods?: D) {
     this._builder = repository.createQueryBuilder(this._alias);
     this._methods = methods;
+  }
+
+  private get _defaultMethods() {
+    return {
+      filter: (filters: Filter) => this.filter(filters),
+      builder: this._builder,
+    };
   }
 
   public get builder() {
@@ -25,10 +32,7 @@ export class QueryHandler<T extends Entity, D extends Methods> {
   }
 
   public get methods() {
-    return {
-      ...this._methods,
-      filter: (filters: Filter) => this.filter(filters),
-    };
+    return { ...this._defaultMethods, ...this._methods };
   }
 
   public filter(filters: Filter) {

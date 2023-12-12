@@ -36,6 +36,7 @@ export class User extends BaseEntity {
     (projectSubscriber) => projectSubscriber.user,
   )
   public subscribedProjects: ProjectSubscriber[];
+  public subscriptionAt: Date | null = null;
 
   // @ManyToMany(() => Project, (project) => project.subscribers)
   // subscribedProjects: Project[];

@@ -20,10 +20,12 @@ export class AuthService {
   ) {}
 
   // Проверка пароля пользователя
-  public async checkUser(payload: LoginUsersDto) {
-    const user = await this._userService.getByEmail(payload.email);
+  public async checkUser(dto: LoginUsersDto) {
+    const user = await this._userService.getOneUser({
+      filter: { field: 'email', value: dto.email },
+    });
     if (!user) return null;
-    const match = await bcrypt.compare(payload.password, user.password);
+    const match = await bcrypt.compare(dto.password, user.password);
     if (!match) return null;
     return user;
   }

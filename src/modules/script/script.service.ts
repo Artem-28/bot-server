@@ -7,6 +7,7 @@ import {
   IFilterQueryBuilder,
   whereQueryBuilder,
 } from '../../base/helpers/where-query-builder';
+import { Options } from '../../base/interfaces/service.interface';
 
 @Injectable()
 export class ScriptService {
@@ -94,5 +95,14 @@ export class ScriptService {
     if (!success) {
       throw new HttpException('script.remove', 500);
     }
+  }
+
+  public async createScript(dto: CreateScriptDto, options: Options = {}) {
+    const { throwException } = options;
+    const response = await this._scriptRepository.save(dto);
+    if (!response && throwException) {
+      throw new HttpException('script.create', 500);
+    }
+    return new Script(response);
   }
 }
