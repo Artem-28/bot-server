@@ -1,9 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
-import { MailMessageOptionsDto } from './dto/mailMessageOptionsDto';
-import { ConfirmationCode } from '../confirmation-code/confirmation-code.entity';
-import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
+
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code.entity';
+
+// Guard
+
+// Types
+import { MailMessageOptionsDto } from '@/modules/mailing/dto/mailMessageOptionsDto';
+import { ConfirmationTypeEnum } from '@/base/enum/confirmation/confirmation-type.enum';
+
+// Helper
 
 @Injectable()
 export class MailingService {

@@ -1,24 +1,29 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+// Module
+
+// Controller
 
 // Service
-import { UserService } from '../user/user.service';
-import { ProjectService } from '../project/project.service';
+import { UserService } from '@/modules/user/user.service';
+import { ProjectService } from '@/modules/project/project.service';
 
 // Entity
-import { User } from '../user/user.entity';
-import { Project } from '../project/project.entity';
-import { ProjectSubscriber } from './projectSubscriber.entity';
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+import { Project } from '@/modules/project/project.entity';
+import { User } from '@/modules/user/user.entity';
+
+// Guard
 
 // Types
-import { Repository } from 'typeorm';
-import { IResponseCombineUserSubscriber } from './interfaces/response-project-subscriber.interface';
-import { SearchProjectSubscriberDto } from './dto/search-project-subscriber.dto';
-import { SubscribeProjectDto } from './dto/subscribe-project.dto';
-import { Options } from '../../base/interfaces/service.interface';
+import { IResponseCombineUserSubscriber } from '@/modules/project-subscriber/interfaces/response-project-subscriber.interface';
+import { SearchProjectSubscriberDto } from '@/modules/project-subscriber/dto/search-project-subscriber.dto';
+import { Options } from '@/base/interfaces/service.interface';
+import { SubscribeProjectDto } from '@/modules/project-subscriber/dto/subscribe-project.dto';
 
-// Helpers
-import QueryBuilderHelper from '../../base/helpers/query-builder-helper';
+// Helper
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class ProjectSubscriberService {

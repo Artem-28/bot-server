@@ -1,15 +1,19 @@
 import { HttpException, Injectable } from '@nestjs/common';
-
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user/user.service';
-import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.service';
-
-import { RegistrationUsersDto } from './dto/registration-users.dto';
-import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
-import { ExceptionTypeEnum } from '../../base/enum/exception/exception-type.enum';
-import { User } from '../user/user.entity';
-import { LoginUsersDto } from './dto/login-users.dto';
 import * as bcrypt from 'bcrypt';
+
+// Entity
+import { User } from '@/modules/user/user.entity';
+
+// Service
+import { UserService } from '@/modules/user/user.service';
+import { ConfirmationCodeService } from '@/modules/confirmation-code/confirmation-code.service';
+
+// Types
+import { ConfirmationTypeEnum } from '@/base/enum/confirmation/confirmation-type.enum';
+import { ExceptionTypeEnum } from '@/base/enum/exception/exception-type.enum';
+import { LoginUsersDto } from '@/modules/auth/dto/login-users.dto';
+import { RegistrationUsersDto } from '@/modules/auth/dto/registration-users.dto';
 
 @Injectable()
 export class AuthService {

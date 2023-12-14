@@ -1,7 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { CheckPermissionService } from '../check-permission.service';
-import { HttpParams } from '../../../base/interfaces/http.interface';
+
+import { HttpParams } from '@/base/interfaces/http.interface';
+import { CheckPermissionService } from '@/modules/check-permission/check-permission.service';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {

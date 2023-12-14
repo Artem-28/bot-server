@@ -1,17 +1,17 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 // Entity
-import { Project } from './project.entity';
+import { Project } from '@/modules/project/project.entity';
 
 // Types
-import { Repository } from 'typeorm';
-import { UpdateProjectDto } from './dto/update-project.dto';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { Options } from '../../base/interfaces/service.interface';
+import { UpdateProjectDto } from '@/modules/project/dto/update-project.dto';
+import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
+import { Options } from '@/base/interfaces/service.interface';
 
 // Helpers
-import QueryBuilderHelper from '../../base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class ProjectService {
@@ -82,7 +82,7 @@ export class ProjectService {
     if (!response && throwException) {
       throw new HttpException('project.get', 500);
     }
-    if (!response) return null
+    if (!response) return null;
     return response;
   }
 

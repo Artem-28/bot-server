@@ -1,8 +1,22 @@
 import { Column, Entity, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../../base/entities/base.entity';
-import { Script } from '../script/script.entity';
-import { User } from '../user/user.entity';
-import { ProjectSubscriber } from '../project-subscriber/projectSubscriber.entity';
+
+// Module
+
+// Controller
+
+// Service
+import { BaseEntity } from '@/base/entities/base.entity';
+import { User } from '@/modules/user/user.entity';
+import { Script } from '@/modules/script/script.entity';
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+
+// Entity
+
+// Guard
+
+// Types
+
+// Helper
 
 @Entity({ name: 'projects' })
 export class Project extends BaseEntity {

@@ -1,16 +1,23 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+// Module
+
+// Controller
+
+// Service
 
 // Entity
-import { User } from './user.entity';
+import { User } from '@/modules/user/user.entity';
+
+// Guard
 
 // Types
-import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { Options } from '../../base/interfaces/service.interface';
+import { CreateUserDto } from '@/modules/user/dto/create-user.dto';
+import { Options } from '@/base/interfaces/service.interface';
 
-// Helpers
-import QueryBuilderHelper from '../../base/helpers/query-builder-helper';
+// Helper
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class UserService {

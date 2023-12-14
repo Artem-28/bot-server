@@ -9,10 +9,18 @@ import {
   Get,
   Req,
 } from '@nestjs/common';
-import { RegistrationUsersDto } from './dto/registration-users.dto';
-import { AuthService } from './auth.service';
-import { AuthLocalGuard } from './passport/guards/auth-local.guard';
-import { AuthJwtGuard } from './passport/guards/auth-jwt.guard';
+
+// Guards
+import { AuthLocalGuard } from '@/modules/auth/passport/guards/auth-local.guard';
+import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
+
+// Service
+import { AuthService } from '@/modules/auth/auth.service';
+
+// Entity
+
+// Types
+import { RegistrationUsersDto } from '@/modules/auth/dto/registration-users.dto';
 
 @Controller('auth')
 export class AuthController {

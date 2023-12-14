@@ -1,18 +1,27 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { UserService } from '../user/user.service';
-import { UserModule } from '../user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/user.entity';
-import { ConfirmationCodeModule } from '../confirmation-code/confirmation-code.module';
-import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.service';
-import { ConfirmationCode } from '../confirmation-code/confirmation-code.entity';
-import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './passport/strategies/local.strategy';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtStrategy } from './passport/strategies/jwt.strategy';
+
+// Module
+import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from '@/modules/user/user.module';
+import { ConfirmationCodeModule } from '@/modules/confirmation-code/confirmation-code.module';
+import { PassportModule } from '@nestjs/passport';
+
+// Service
+import { AuthService } from '@/modules/auth/auth.service';
+import { UserService } from '@/modules/user/user.service';
+import { ConfirmationCodeService } from '@/modules/confirmation-code/confirmation-code.service';
+
+// Controller
+import { AuthController } from '@/modules/auth/auth.controller';
+
+// Entity
+import { User } from '@/modules/user/user.entity';
+import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code.entity';
+
+import { LocalStrategy } from '@/modules/auth/passport/strategies/local.strategy';
+import { JwtStrategy } from '@/modules/auth/passport/strategies/jwt.strategy';
 
 @Module({
   imports: [

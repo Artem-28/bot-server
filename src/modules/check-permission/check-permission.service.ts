@@ -1,11 +1,17 @@
-import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Repository} from 'typeorm';
-import {User} from '../user/user.entity';
-import {CheckPermissionDto} from './dto/check-permission.dto';
-import {PermissionEnum} from '../../base/enum/permission/permission.enum';
-import {HttpParams} from '../../base/interfaces/http.interface';
-import QueryBuilderHelper from '../../base/helpers/query-builder-helper';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+// Entity
+import { User } from '@/modules/user/user.entity';
+
+// Types
+import { CheckPermissionDto } from '@/modules/check-permission/dto/check-permission.dto';
+import { PermissionEnum } from '@/base/enum/permission/permission.enum';
+import { HttpParams } from '@/base/interfaces/http.interface';
+
+// Helpers
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class CheckPermissionService {

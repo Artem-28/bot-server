@@ -1,10 +1,17 @@
 import { Body, Controller, HttpException, Post } from '@nestjs/common';
 
-import { MailingService } from '../mailing/mailing.service';
-import { ConfirmationCodeService } from './confirmation-code.service';
+// Service
+import { ConfirmationCodeService } from '@/modules/confirmation-code/confirmation-code.service';
+import { MailingService } from '@/modules/mailing/mailing.service';
 
-import { CreateConfirmationCodeDto } from './dto/create-confirmation-code.dto';
-import { CheckConfirmationCodeDto } from './dto/check-confirmation-code.dto';
+// Types
+
+import {
+  IResponseCheckCode,
+  IResponseSendCode,
+} from '@/modules/confirmation-code/interfaces/response-code.interface';
+import { CreateConfirmationCodeDto } from '@/modules/confirmation-code/dto/create-confirmation-code.dto';
+import { CheckConfirmationCodeDto } from '@/modules/confirmation-code/dto/check-confirmation-code.dto';
 
 @Controller('confirmation-codes')
 export class ConfirmationCodeController {
@@ -14,10 +21,11 @@ export class ConfirmationCodeController {
   ) {}
 
   @Post('send')
-  public async send(@Body() body: CreateConfirmationCodeDto) {
+  public async send(
+    @Body() body: CreateConfirmationCodeDto,
+  ): Promise<IResponseSendCode> {
     try {
       const code = await this.confirmationCodeService.createCode(body);
-      console.log('CODE', code);
       // Отправка кода подтверждения на почту
       await this.mailingService.sendConfirmCodeMessage(code);
       return this.confirmationCodeService.getResponseCode(code);
@@ -27,7 +35,9 @@ export class ConfirmationCodeController {
   }
 
   @Post('check')
-  public async check(@Body() body: CheckConfirmationCodeDto) {
+  public async check(
+    @Body() body: CheckConfirmationCodeDto,
+  ): Promise<IResponseCheckCode> {
     try {
       return this.confirmationCodeService.checkCode(body);
     } catch (e) {

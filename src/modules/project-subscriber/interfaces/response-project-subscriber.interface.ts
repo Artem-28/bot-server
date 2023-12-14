@@ -1,5 +1,5 @@
-import { Project } from '../../project/project.entity';
-import { User } from '../../user/user.entity';
+import { User } from '@/modules/user/user.entity';
+import { Project } from '@/modules/project/project.entity';
 
 export interface IResponseCombineUserSubscriber {
   user: User;

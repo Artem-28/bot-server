@@ -1,7 +1,20 @@
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
-import { BaseEntity } from '../../base/entities/base.entity';
-import { User } from '../user/user.entity';
-import { Project } from '../project/project.entity';
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { BaseEntity } from '@/base/entities/base.entity';
+import { Project } from '@/modules/project/project.entity';
+import { User } from '@/modules/user/user.entity';
+
+// Guard
+
+// Types
+
+// Helper
 
 @Entity({ name: 'project_users' })
 @Unique(['project', 'user'])

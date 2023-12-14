@@ -11,23 +11,28 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+// Module
 
-// Guards
-import { PermissionGuard } from '../check-permission/guards/permission.guard';
-import { Permission } from '../check-permission/decorators/permission.decorator';
-import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
+// Controller
 
 // Service
-import { ProjectService } from './project.service';
-import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
+import { ProjectService } from '@/modules/project/project.service';
+import { ProjectSubscriberService } from '@/modules/project-subscriber/project-subscriber.service';
 
 // Entity
-import { Project } from './project.entity';
+import { Project } from '@/modules/project/project.entity';
+
+// Guard
+import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
+import { PermissionGuard } from '@/modules/check-permission/guards/permission.guard';
+import { Permission } from '@/modules/check-permission/decorators/permission.decorator';
 
 // Types
-import { CreateProjectDto } from './dto/create-project.dto';
-import { PermissionEnum } from '../../base/enum/permission/permission.enum';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
+import { PermissionEnum } from '@/base/enum/permission/permission.enum';
+import { UpdateProjectDto } from '@/modules/project/dto/update-project.dto';
+
+// Helper
 
 @Controller('projects')
 @UseGuards(AuthJwtGuard)
