@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
-import { ConfirmationTypeEnum } from '../base/enum/confirmation/confirmation-type.enum';
+import { ConfirmationTypeEnum } from '@/base/enum/confirmation/confirmation-type.enum';
 
 export class CreateConfirmationCodeTable1693818036815
   implements MigrationInterface

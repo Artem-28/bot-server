@@ -4,13 +4,14 @@ import {
   QueryFilter,
   QueryRelation,
   QuerySelect,
-} from '../interfaces/service.interface';
+} from '@/base/interfaces/service.interface';
+
 // Entities
-import { Project } from '../../modules/project/project.entity';
-import { Script } from '../../modules/script/script.entity';
-import { ProjectSubscriber } from '../../modules/project-subscriber/projectSubscriber.entity';
-import { User } from '../../modules/user/user.entity';
-import { toArray } from './array-helper';
+import { Project } from '@/modules/project/project.entity';
+import { Script } from '@/modules/script/script.entity';
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+import { User } from '@/modules/user/user.entity';
+import { toArray } from '@/base/helpers/array-helper';
 
 type Entity = Project | Script | ProjectSubscriber | User;
 interface Options {
@@ -101,9 +102,7 @@ export default class QueryBuilderHelper<T extends Entity> {
   private _updateQueryFilter(
     filter: QueryFilter | QueryFilter[] | undefined,
   ): void {
-    if (!filter) return;
-    const filterArray = Array.isArray(filter) ? filter : [filter];
-    filterArray.forEach((data) => {
+    toArray(filter).forEach((data) => {
       const formatFilter = this._formatterFilter(data);
       this._queryFilter.push(formatFilter);
     });
@@ -112,7 +111,6 @@ export default class QueryBuilderHelper<T extends Entity> {
   private _updateQueryRelation(
     relation: QueryRelation | QueryRelation[] | undefined,
   ): void {
-    if (!relation) return;
     toArray(relation).forEach((data) => {
       const name = `${this._alias}.${data.name}`;
       const alias = data.alias || data.name;

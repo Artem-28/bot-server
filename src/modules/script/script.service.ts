@@ -1,13 +1,25 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Script } from './script.entity';
-import { CreateScriptDto } from './dto/create-script.dto';
-import {
-  IFilterQueryBuilder,
-  whereQueryBuilder,
-} from '../../base/helpers/where-query-builder';
-import { Options } from '../../base/interfaces/service.interface';
+import { Repository } from 'typeorm';
+
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { Script } from '@/modules/script/script.entity';
+
+// Guard
+
+// Types
+import { UpdateScriptDto } from '@/modules/script/dto/update-script-dto';
+import { Options } from '@/base/interfaces/service.interface';
+import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
+
+// Helper
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class ScriptService {
@@ -16,28 +28,8 @@ export class ScriptService {
     private readonly _scriptRepository: Repository<Script>,
   ) {}
 
-  // Создание скрипта
-  private async _create(dto: CreateScriptDto): Promise<Script> {
-    const response = await this._scriptRepository.save(dto);
-    return new Script(response);
-  }
-
-  // Обновление скрипта
-  private async _update(
-    id: number,
-    payload: Partial<CreateScriptDto>,
-  ): Promise<boolean> {
-    const response = await this._scriptRepository
-      .createQueryBuilder('script')
-      .update()
-      .set(payload)
-      .where({ id })
-      .execute();
-    return !!response.affected;
-  }
-
   // Удаление скрипта по id
-  private async _remove(id: number): Promise<boolean> {
+  public async removeScript(id: number, options?: Options): Promise<boolean> {
     const response = await this._scriptRepository
       .createQueryBuilder()
       .delete()
@@ -45,64 +37,60 @@ export class ScriptService {
       .where({ id })
       .execute();
 
-    return !!response.affected;
-  }
+    const success = !!response.affected;
 
-  // Получение скрипта по id
-  public async getById(id: number, filters: IFilterQueryBuilder[] = []) {
-    const rootQuery = this._scriptRepository
-      .createQueryBuilder('script')
-      .where({ id });
-
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as SelectQueryBuilder<Script>;
-
-    const response = await query.getOne();
-    if (!response) return null;
-    return new Script(response);
-  }
-
-  // Получение списка скриптов по id проекта
-  public async getScriptsByProjectId(projectId: number) {
-    return await this._scriptRepository
-      .createQueryBuilder('script')
-      .where({ projectId })
-      .getMany();
-  }
-
-  // Обработка создания скрипта
-  public async createScriptHandle(dto: CreateScriptDto): Promise<Script> {
-    return await this._create(dto);
-  }
-
-  // Обработка обновления скрипта
-  public async updateScriptHandle(
-    scriptId: number,
-    payload: Partial<CreateScriptDto>,
-  ) {
-    const success = await this._update(scriptId, payload);
-    if (!success) {
-      throw new HttpException('script.update', 500);
+    if (!success && options && options.throwException) {
+      throw new HttpException('scriptUpdate.update', 500);
     }
-    return this.getById(scriptId);
+    return success;
   }
 
-  // Обработка удаления скрипта
-  public async removeScriptHandle(scriptId: number): Promise<void> {
-    const success = await this._remove(scriptId);
-    if (!success) {
-      throw new HttpException('script.remove', 500);
-    }
-  }
-
-  public async createScript(dto: CreateScriptDto, options: Options = {}) {
-    const { throwException } = options;
+  // Создание скрипта
+  public async createScript(
+    dto: CreateScriptDto,
+    options?: Options,
+  ): Promise<Script> {
     const response = await this._scriptRepository.save(dto);
-    if (!response && throwException) {
+    if (!response && options && options.throwException) {
       throw new HttpException('script.create', 500);
     }
     return new Script(response);
+  }
+
+  // Обновление скрипта
+  public async updateScript(
+    id: number,
+    dto: UpdateScriptDto,
+    options?: Options,
+  ): Promise<boolean> {
+    delete dto.projectId;
+    const response = await this._scriptRepository
+      .createQueryBuilder()
+      .update()
+      .set(dto)
+      .where({ id })
+      .execute();
+
+    const success = !!response.affected;
+
+    if (!success && options.throwException) {
+      throw new HttpException('scriptUpdate.update', 500);
+    }
+    return success;
+  }
+
+  // Получение одного скрипта
+  public async getOneScript(options: Options): Promise<Script> {
+    const { filter, relation, throwException } = options;
+    const queryHelper = new QueryBuilderHelper(this._scriptRepository, {
+      filter,
+      relation,
+    });
+    const response = await queryHelper.builder.getOne();
+    if (!response && throwException) {
+      throw new HttpException('script.get', 500);
+    }
+    if (!response) return null;
+    return response;
   }
 }

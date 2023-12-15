@@ -1,6 +1,19 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../base/entities/base.entity';
-import { Project } from '../project/project.entity';
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { BaseEntity } from '@/base/entities/base.entity';
+import { Project } from '@/modules/project/project.entity';
+
+// Guard
+
+// Types
+
+// Helper
 
 @Entity({ name: 'scripts' })
 export class Script extends BaseEntity {

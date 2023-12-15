@@ -1,8 +1,22 @@
 import { Module } from '@nestjs/common';
-import { ScriptService } from './script.service';
-import { ScriptController } from './script.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Script } from './script.entity';
+
+// Module
+
+// Controller
+import { ScriptController } from '@/modules/script/script.controller';
+
+// Service
+import { ScriptService } from '@/modules/script/script.service';
+
+// Entity
+import { Script } from '@/modules/script/script.entity';
+
+// Guard
+
+// Types
+
+// Helper
 
 @Module({
   imports: [TypeOrmModule.forFeature([Script])],

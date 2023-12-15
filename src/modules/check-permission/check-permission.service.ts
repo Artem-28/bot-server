@@ -52,6 +52,11 @@ export class CheckPermissionService {
       case PermissionEnum.PROJECT_SUBSCRIBERS_VIEW:
         return this._checkProjectAccess(user, params.projectId);
       case PermissionEnum.PROJECT_VIEW:
+      case PermissionEnum.SCRIPT_ACCESS:
+      case PermissionEnum.SCRIPT_DELETE:
+      case PermissionEnum.SCRIPT_CREATE:
+      case PermissionEnum.SCRIPT_UPDATE:
+      case PermissionEnum.SCRIPT_VIEW:
         return this._checkProjectView(user, params.projectId);
       case PermissionEnum.PROJECT_UNSUBSCRIBE:
         return this._checkProjectUnsubscribe(user, params);
@@ -76,6 +81,11 @@ export class CheckPermissionService {
           queryHelper.relation({ name: 'projects', select: 'id' });
           break;
         case PermissionEnum.PROJECT_VIEW:
+        case PermissionEnum.SCRIPT_ACCESS:
+        case PermissionEnum.SCRIPT_DELETE:
+        case PermissionEnum.SCRIPT_CREATE:
+        case PermissionEnum.SCRIPT_UPDATE:
+        case PermissionEnum.SCRIPT_VIEW:
           queryHelper.relation([
             { name: 'projects', select: 'id' },
             { name: 'subscribedProjects', select: 'projectId' },
