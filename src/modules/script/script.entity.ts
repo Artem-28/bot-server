@@ -1,6 +1,19 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../../base/entities/base.entity';
-import { Project } from '../project/project.entity';
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { BaseEntity } from '@/base/entities/base.entity';
+import { Project } from '@/modules/project/project.entity';
+
+// Guard
+
+// Types
+
+// Helper
 
 @Entity({ name: 'scripts' })
 export class Script extends BaseEntity {
@@ -16,7 +29,7 @@ export class Script extends BaseEntity {
   @JoinColumn({ name: 'project_id' })
   project: Project;
 
-  constructor(partial: Partial<Project>) {
+  constructor(partial: Partial<Script>) {
     super();
     Object.assign(this, partial);
   }

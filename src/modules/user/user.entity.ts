@@ -1,8 +1,21 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { BaseEntity } from '../../base/entities/base.entity';
-import { Project } from '../project/project.entity';
-import { ProjectSubscriber } from '../project-subscriber/projectSubscriber.entity';
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { BaseEntity } from '@/base/entities/base.entity';
+import { Project } from '@/modules/project/project.entity';
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+
+// Guard
+
+// Types
+
+// Helper
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -36,6 +49,7 @@ export class User extends BaseEntity {
     (projectSubscriber) => projectSubscriber.user,
   )
   public subscribedProjects: ProjectSubscriber[];
+  public subscriptionAt: Date | null = null;
 
   // @ManyToMany(() => Project, (project) => project.subscribers)
   // subscribedProjects: Project[];

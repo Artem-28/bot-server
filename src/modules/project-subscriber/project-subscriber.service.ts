@@ -1,26 +1,29 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteQueryBuilder, Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
+// Module
 
-import { UserService } from '../user/user.service';
-import { ProjectService } from '../project/project.service';
+// Controller
 
-import { User } from '../user/user.entity';
-import { Project } from '../project/project.entity';
-import { ProjectSubscriber } from './projectSubscriber.entity';
+// Service
+import { UserService } from '@/modules/user/user.service';
+import { ProjectService } from '@/modules/project/project.service';
 
-import {
-  IFilterQueryBuilder,
-  whereQueryBuilder,
-} from '../../base/helpers/where-query-builder';
+// Entity
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+import { Project } from '@/modules/project/project.entity';
+import { User } from '@/modules/user/user.entity';
 
-import {
-  IResponseCombineUserSubscriber,
-  IResponseSubscriberUser,
-} from './interfaces/response-project-subscriber.interface';
+// Guard
 
-import { SearchProjectSubscriberDto } from './dto/search-project-subscriber.dto';
-import { SubscribeProjectDto } from './dto/subscribe-project.dto';
+// Types
+import { IResponseCombineUserSubscriber } from '@/modules/project-subscriber/interfaces/response-project-subscriber.interface';
+import { SearchProjectSubscriberDto } from '@/modules/project-subscriber/dto/search-project-subscriber.dto';
+import { Options } from '@/base/interfaces/service.interface';
+import { SubscribeProjectDto } from '@/modules/project-subscriber/dto/subscribe-project.dto';
+
+// Helper
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class ProjectSubscriberService {
@@ -37,15 +40,23 @@ export class ProjectSubscriberService {
   // Комбинирует подписчиков по пользователю
   private _combineSubscriberByUser(
     subscribers: ProjectSubscriber[],
-  ): Map<number, IResponseCombineUserSubscriber> {
-    return subscribers.reduce((acc, current) => {
+  ): IResponseCombineUserSubscriber[];
+  private _combineSubscriberByUser(
+    subscribers: ProjectSubscriber[],
+    combineUserId: number,
+  ): IResponseCombineUserSubscriber;
+  private _combineSubscriberByUser(
+    subscribers: ProjectSubscriber[],
+    combineUserId?: number,
+  ) {
+    const responseMap = subscribers.reduce((acc, current) => {
       const mapKey = current.userId; // Ключ по которому соотавляется мапа
       const user = current.formatUser; // Получение отформотированого пользователя
       const project = current.formatProject; // Получение отформатированого проекта
       // Если в мапе нет еще такого пользователя
       if (!acc.has(mapKey)) {
         // Добавим нового подписчика с проектом
-        acc.set(mapKey, { ...user, projects: [project] });
+        acc.set(mapKey, { user, projects: [project] });
         return acc;
       }
       // Если в мапе есть уже такой пользователь то добавим проект на который он подписан
@@ -54,125 +65,62 @@ export class ProjectSubscriberService {
       acc.set(mapKey, subscriber);
       return acc;
     }, new Map<number, IResponseCombineUserSubscriber>());
-  }
-  // Форматирует ответ клиенту
-  private _formatterSubscribers(
-    subscribers: ProjectSubscriber[],
-    combine: 'user' | 'project' = 'user',
-  ) {
-    // Комбинация по пользователю
-    if (combine === 'user') {
-      const responseMap = this._combineSubscriberByUser(subscribers);
+    if (!combineUserId) {
       return Array.from(responseMap.values());
     }
-  }
-
-  // Удаление подписчика с проекта
-  private async _removeProjectSubscriber(payload: SearchProjectSubscriberDto) {
-    const filter: IFilterQueryBuilder[] = [
-      { field: 'projectId', value: payload.projectId },
-      { field: 'userId', value: payload.userId },
-    ];
-    const rootQuery = this._subscriberRepository
-      .createQueryBuilder()
-      .delete()
-      .from(ProjectSubscriber);
-    const query = whereQueryBuilder(
-      rootQuery,
-      filter,
-    ) as DeleteQueryBuilder<ProjectSubscriber>;
-
-    const response = await query.execute();
-    return !!response.affected;
-  }
-
-  // Проверяет существует ли подписчик у проекта
-  private async _existSubscriber(
-    userId: number,
-    projectId: number,
-  ): Promise<boolean> {
-    // Установка фильтров
-    const filters: IFilterQueryBuilder[] = [
-      { field: 'userId', value: userId },
-      { field: 'projectId', value: projectId },
-    ];
-    const rootQuery = this._subscriberRepository.createQueryBuilder();
-    // Установка фильтров
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as SelectQueryBuilder<Project>;
-    const count = await query.getCount();
-    return !!count;
+    return responseMap.get(combineUserId);
   }
 
   // Отписать пользователя от проекта
   public async unsubscribeUserFromProject(
-    user: User,
-    payload: SearchProjectSubscriberDto,
+    dto: SearchProjectSubscriberDto,
+    options?: Options,
   ): Promise<boolean> {
-    // Фильтры для выборки
-    const filter: IFilterQueryBuilder[] = [
-      { field: 'projectId', value: payload.projectId },
-      { field: 'userId', value: payload.userId },
-    ];
-    const rootQuery = this._subscriberRepository
-      .createQueryBuilder('projectSubscriber')
-      .innerJoinAndSelect('projectSubscriber.project', 'project');
-    // Устанавливаем фильтры
-    const query = whereQueryBuilder(
-      rootQuery,
-      filter,
-    ) as SelectQueryBuilder<ProjectSubscriber>;
-    // Получаем подписчика
-    const subscriber = await query.getOne();
-    // Если нет подписчика
-    if (!subscriber) {
-      throw new HttpException('project_subscribe.not_exist', 404);
+    const response = await this._subscriberRepository
+      .createQueryBuilder()
+      .delete()
+      .from(ProjectSubscriber)
+      .where({ userId: dto.userId })
+      .andWhere({ projectId: dto.projectId })
+      .execute();
+    const success = !!response.affected;
+    if (!success && options && options.throwException) {
+      throw new HttpException('project_subscribe.delete', 500);
     }
-    // Является ли пользователь владельцем проекта
-    const isOwner = subscriber.project.checkOwner(user.id);
-    // Является ли пользователь сам подписчиком (т.е. хочет отписаться сам)
-    const isSubscriber = user.id === subscriber.userId;
-    // Если пользователь не подписчик и не владелец проекта
-    if (!isOwner && !isSubscriber) {
-      throw new HttpException('project_subscribe.permission_denied', 403);
-    }
-    // Удаляем пользователя из подписчиков
-    return await this._removeProjectSubscriber(payload);
+    return success;
   }
 
   // Подписать пользователя на проект
   public async subscribeUserToProject(
-    user: User, // Владелец проекта на который подписываем
-    payload: SubscribeProjectDto,
-  ): Promise<ProjectSubscriber> {
+    dto: SubscribeProjectDto,
+    options: Options,
+  ): Promise<ProjectSubscriber | null> {
     // Получаем проект на который нужно подписать
-    const project = await this._projectService.getById(payload.projectId);
+    const project = await this._projectService.getOneProject({
+      filter: { field: 'id', value: dto.projectId },
+    });
     // Если проекта нет
-    if (!project) {
-      throw new HttpException('project.not_found', 404);
+    if (options.throwException && !project) {
+      throw new HttpException('project_subscribe.project_not_found', 404);
     }
-    // Проверяем является ли пользователь владельцем проета
-    const isOwner = project.checkOwner(user.id);
-    if (!isOwner) {
-      throw new HttpException('base.permission_denied', 403);
-    }
+    if (!project) return null;
     // Получаем подписчика
-    const subscriber = await this._userService.getByEmail(payload.email);
+    const subscriber = await this._userService.getOneUser({
+      filter: { field: 'email', value: dto.email },
+    });
     // Если подписчика нет
-    if (!subscriber) {
-      throw new HttpException('user.not_found', 404);
+    if (options.throwException && !subscriber) {
+      throw new HttpException('project_subscribe.user_not_found', 404);
     }
-    // Проверяем подписан ли пользователь уже на этот проект
-    const existsSubscriber = await this._existSubscriber(
-      subscriber.id,
-      project.id,
-    );
-    // Если подписан
-    if (existsSubscriber) {
-      throw new HttpException('project_subscribe.is_exist', 500);
+    if (!subscriber) return null;
+
+    // Проверяем является ли подписчик владельцем проекта
+    const isOwner = project.checkOwner(subscriber.id);
+    if (options.throwException && isOwner) {
+      throw new HttpException('project_subscribe.user_owner', 500);
     }
+    if (isOwner) return null;
+
     // Подписываем на проект
     const projectSubscriber = new ProjectSubscriber({
       project,
@@ -192,24 +140,24 @@ export class ProjectSubscriberService {
       .relation(User, 'projects')
       .of(authUser)
       .loadMany();
+
     // Загружаем подписика и все проекты
-    const projectSubscribers = await this._subscriberRepository
-      .createQueryBuilder('projectSubscriber')
-      .innerJoinAndSelect('projectSubscriber.user', 'user')
-      .innerJoinAndSelect('projectSubscriber.project', 'project')
-      .where('projectSubscriber.projectId IN (:...projectIds)', {
-        projectIds: authUser.projectIds,
-      })
-      .andWhere('projectSubscriber.userId = :userId', { userId })
-      .getMany();
+    const queryHelper = new QueryBuilderHelper(this._subscriberRepository, {
+      filter: [
+        { field: 'projectId', value: authUser.projectIds },
+        { field: 'userId', value: userId },
+      ],
+      relation: [{ name: 'user' }, { name: 'project' }],
+    });
+    const projectSubscribers = await queryHelper.builder.getMany();
     // Форматируем результат
-    const subscribers = this._formatterSubscribers(projectSubscribers);
-    if (!subscribers.length) return null;
-    return subscribers[0];
+    return this._combineSubscriberByUser(projectSubscribers, userId);
   }
 
   // Получение списка всех подписчиков которые подписаны на проекты пользователя
-  public async getSubscribers(authUser: User) {
+  public async getSubscribers(
+    authUser: User,
+  ): Promise<IResponseCombineUserSubscriber[]> {
     // Загружаем проекты пользователя
     authUser.projects = await this._projectRepository
       .createQueryBuilder()
@@ -218,48 +166,39 @@ export class ProjectSubscriberService {
       .loadMany();
 
     // Получаем подписчиков которые подписаны на проекты пользователя
-    const projectSubscribers = await this._subscriberRepository
-      .createQueryBuilder('projectSubscriber')
-      .innerJoinAndSelect('projectSubscriber.user', 'user')
-      .innerJoinAndSelect('projectSubscriber.project', 'project')
-      .where('projectSubscriber.projectId IN (:...projectIds)', {
-        projectIds: authUser.projectIds,
-      })
-      .getMany();
+    const queryHelper = new QueryBuilderHelper(this._subscriberRepository, {
+      filter: { field: 'projectId', value: authUser.projectIds },
+      relation: [{ name: 'user' }, { name: 'project' }],
+    });
+    const projectSubscribers = await queryHelper.builder.getMany();
     // Форматируем результат
-    return this._formatterSubscribers(projectSubscribers);
+    return this._combineSubscriberByUser(projectSubscribers);
   }
 
-  public async getSubscribeProjects(userId: number): Promise<Project[]> {
-    const projectSubscribers = await this._subscriberRepository
-      .createQueryBuilder('projectSubscriber')
-      .innerJoinAndSelect('projectSubscriber.project', 'project')
-      .where('projectSubscriber.userId = :userId', { userId })
+  // Получает проекты на который подписан
+  public async getSubscribeProjects(options?: Options): Promise<Project[]> {
+    const { filter, relation } = options;
+    const queryHelper = new QueryBuilderHelper(this._subscriberRepository, {
+      filter,
+      relation,
+    });
+    const projectSubscribers = await queryHelper
+      .relation({ name: 'project' })
       .getMany();
     return projectSubscribers.map((subscribe) => subscribe.formatProject);
   }
 
   // Получение списка подписчиков для проекта
-  public async getSubscribersByProject(
-    authUser: User,
-    projectId: number,
-  ): Promise<IResponseSubscriberUser[]> {
-    // Получаем проект у которого надо получить подписчиков
-    const project = await this._projectService.getById(projectId);
-    // Если проекта нет
-    if (!project) {
-      throw new HttpException('project.not_found', 404);
-    }
-    // Проверяем является ли пользователь владельцем проета
-    const isOwner = project.checkOwner(authUser.id);
-    if (!isOwner) {
-      throw new HttpException('base.permission_denied', 403);
-    }
+  public async getSubscribeUsers(options?: Options): Promise<User[]> {
+    const { filter, relation } = options;
     // Получаем подписчиков которые подписаны на проекты пользователя
-    const projectSubscribers = await this._subscriberRepository
-      .createQueryBuilder('projectSubscriber')
-      .innerJoinAndSelect('projectSubscriber.user', 'user')
-      .where('projectSubscriber.projectId = :projectId', { projectId })
+    const queryHelper = new QueryBuilderHelper(this._subscriberRepository, {
+      filter,
+      relation,
+    });
+
+    const projectSubscribers = await queryHelper
+      .relation({ name: 'user' })
       .getMany();
     // Форматирование ответа
     return projectSubscribers.map((subscribe) => subscribe.formatUser);

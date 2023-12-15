@@ -1,7 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { CheckPermissionService } from '../check-permission.service';
-import { HttpParams } from '../../../base/interfaces/http.interface';
+
+import { HttpParams } from '@/base/interfaces/http.interface';
+import { CheckPermissionService } from '@/modules/check-permission/check-permission.service';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -27,8 +28,12 @@ export class PermissionGuard implements CanActivate {
     const body = request.body;
     const httpParams = {} as HttpParams;
     const projectId = params.projectId || body.projectId;
+    const userId = params.userId || body.userId;
     if (projectId) {
       httpParams.projectId = Number(projectId);
+    }
+    if (userId) {
+      httpParams.userId = Number(userId);
     }
     return httpParams;
   }

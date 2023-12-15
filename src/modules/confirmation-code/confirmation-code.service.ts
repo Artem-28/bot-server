@@ -2,17 +2,25 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateConfirmationCodeDto } from './dto/create-confirmation-code.dto';
-import { CheckConfirmationCodeDto } from './dto/check-confirmation-code.dto';
+// Service
+
+// Entity
+import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code.entity';
+
+// Guard
+
+// Types
+import { CreateConfirmationCodeDto } from '@/modules/confirmation-code/dto/create-confirmation-code.dto';
+import { CheckConfirmationCodeDto } from '@/modules/confirmation-code/dto/check-confirmation-code.dto';
+import { ExceptionTypeEnum } from '@/base/enum/exception/exception-type.enum';
 import {
   IResponseCheckCode,
   IResponseSendCode,
-} from './interfaces/response-code.interface';
+} from '@/modules/confirmation-code/interfaces/response-code.interface';
+import { RemoveConfirmationCodeDto } from '@/modules/confirmation-code/dto/remove-confirmation-code.dto';
 
-import randomInteger from '../../base/helpers/randomInteger';
-import { ConfirmationCode } from './confirmation-code.entity';
-import { ExceptionTypeEnum } from '../../base/enum/exception/exception-type.enum';
-import { RemoveConfirmationCodeDto } from './dto/remove-confirmation-code.dto';
+// Helper
+import randomInteger from '@/base/helpers/randomInteger';
 
 @Injectable()
 export class ConfirmationCodeService {

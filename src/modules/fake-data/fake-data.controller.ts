@@ -1,6 +1,20 @@
 import { Controller, Post, HttpException, Body } from '@nestjs/common';
-import { FakeDataService } from './fake-data.service';
-import { FakeDataDto } from './dto/fake-data.dto';
+
+// Module
+
+// Controller
+
+// Service
+import { FakeDataService } from '@/modules/fake-data/fake-data.service';
+
+// Entity
+
+// Guard
+
+// Types
+import { FakeDataDto } from '@/modules/fake-data/dto/fake-data.dto';
+
+// Helper
 
 @Controller('fake-data')
 export class FakeDataController {

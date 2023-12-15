@@ -1,16 +1,29 @@
 import { Module } from '@nestjs/common';
-import { ProjectService } from './project.service';
-import { ProjectController } from './project.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Script } from '../script/script.entity';
-import { Project } from './project.entity';
-import { ProjectSubscriberModule } from '../project-subscriber/project-subscriber.module';
-import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
-import { ProjectSubscriber } from '../project-subscriber/projectSubscriber.entity';
-// UserModule используется в ProjectSubscriberModule
-import { User } from '../user/user.entity';
-import { UserModule } from '../user/user.module';
-import { UserService } from '../user/user.service';
+
+// Module
+import { UserModule } from '@/modules/user/user.module';
+import { ProjectSubscriberModule } from '@/modules/project-subscriber/project-subscriber.module';
+
+// Controller
+
+// Service
+import { UserService } from '@/modules/user/user.service';
+import { ProjectSubscriberService } from '@/modules/project-subscriber/project-subscriber.service';
+import { ProjectService } from '@/modules/project/project.service';
+import { ProjectController } from '@/modules/project/project.controller';
+
+// Entity
+import { Script } from '@/modules/script/script.entity';
+import { Project } from '@/modules/project/project.entity';
+import { User } from '@/modules/user/user.entity';
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+
+// Guard
+
+// Types
+
+// Helper
 
 @Module({
   imports: [

@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -11,16 +10,29 @@ import {
   Query,
   Req,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { AuthJwtGuard } from '../auth/passport/guards/auth-jwt.guard';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { ProjectService } from './project.service';
-import { Project } from './project.entity';
-import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
-import { Permission } from '../check-permission/decorators/permission.decorator';
-import { PermissionEnum } from '../../base/enum/permission/permission.enum';
-import { PermissionGuard } from '../check-permission/guards/permission.guard';
+// Module
+
+// Controller
+
+// Service
+import { ProjectService } from '@/modules/project/project.service';
+import { ProjectSubscriberService } from '@/modules/project-subscriber/project-subscriber.service';
+
+// Entity
+import { Project } from '@/modules/project/project.entity';
+
+// Guard
+import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
+import { PermissionGuard } from '@/modules/check-permission/guards/permission.guard';
+import { Permission } from '@/modules/check-permission/decorators/permission.decorator';
+
+// Types
+import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
+import { PermissionEnum } from '@/base/enum/permission/permission.enum';
+import { UpdateProjectDto } from '@/modules/project/dto/update-project.dto';
+
+// Helper
 
 @Controller('projects')
 @UseGuards(AuthJwtGuard)
@@ -32,9 +44,12 @@ export class ProjectController {
 
   // Создание проекта
   @Post()
-  async create(@Req() req, @Body() body: CreateProjectDto) {
+  async create(@Req() req, @Body() body: CreateProjectDto): Promise<Project> {
     try {
-      return await this.projectService.create(req.user.id, body);
+      const dto = { ...body, userId: req.user.id };
+      return await this.projectService.createProject(dto, {
+        throwException: true,
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -42,7 +57,6 @@ export class ProjectController {
 
   // Получение списка проектов пользователя и проектов на которые он подписан
   @Get()
-  @UseInterceptors(ClassSerializerInterceptor)
   async availableProjects(@Req() req, @Query() query): Promise<Project[]> {
     try {
       const { onlyOwner, onlySubscriber } = query;
@@ -51,14 +65,17 @@ export class ProjectController {
       const projects: Project[] = [];
       // Если нужно загрузить все проекты или только которые создал пользователь
       if (isLoadAll || onlyOwner) {
-        const ownerProjects =
-          await this.projectService.getProjectsByUserId(userId);
+        const ownerProjects = await this.projectService.getProjects({
+          filter: { field: 'userId', value: userId },
+        });
         projects.push(...ownerProjects);
       }
       // Если нужно загрузить все проекты или только на которые подписан пользователь
       if (isLoadAll || onlySubscriber) {
         const subscribeProjects =
-          await this.projectSubscriberService.getSubscribeProjects(userId);
+          await this.projectSubscriberService.getSubscribeProjects({
+            filter: { field: 'userId', value: userId },
+          });
         projects.push(...subscribeProjects);
       }
       return projects;
@@ -71,15 +88,14 @@ export class ProjectController {
   @Get(':projectId')
   @UseGuards(PermissionGuard)
   @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_VIEW],
     'or',
   )
-  @UseInterceptors(ClassSerializerInterceptor)
   async info(@Req() req, @Param() params: any) {
     try {
-      const id = params.projectId;
-      const filters = [{ field: 'userId', value: req.user.id }];
-      return await this.projectService.getById(id, filters);
+      return await this.projectService.getOneProject({
+        filter: { field: 'id', value: params.projectId },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -89,18 +105,24 @@ export class ProjectController {
   @Patch(':projectId')
   @UseGuards(PermissionGuard)
   @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_UPDATE],
     'or',
   )
   async update(
     @Req() req,
     @Param() params: any,
-    @Body() body: Partial<CreateProjectDto>,
+    @Body() body: UpdateProjectDto,
   ) {
     try {
       const id = params.projectId;
-      const filters = [{ field: 'userId', value: req.user.id }];
-      return await this.projectService.updateProjectHandle(id, body, filters);
+      // Обновляем проект
+      await this.projectService.updateProject(id, body, {
+        throwException: true,
+      });
+      // Получаем обновленный проект
+      return await this.projectService.getOneProject({
+        filter: { field: 'id', value: id },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -110,14 +132,31 @@ export class ProjectController {
   @Delete(':projectId')
   @UseGuards(PermissionGuard)
   @Permission(
-    [PermissionEnum.PROJECT_OWNER, PermissionEnum.PROJECT_SUBSCRIBER],
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_DELETE],
     'or',
   )
   async remove(@Req() req, @Param() params) {
     try {
       const id = params.projectId;
-      const filters = [{ field: 'userId', value: req.user.id }];
-      await this.projectService.removeProjectHandle(id, filters);
+      await this.projectService.removeProject(id, { throwException: true });
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
+  }
+
+  // Получение скриптов у проекта
+  @UseGuards(PermissionGuard)
+  @Permission(
+    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_VIEW],
+    'or',
+  )
+  @Get(':projectId/scripts')
+  async getProjectScripts(@Req() req, @Param() params) {
+    try {
+      return await this.projectService.getOneProject({
+        filter: { field: 'id', value: params.projectId },
+        relation: { name: 'scripts' },
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }

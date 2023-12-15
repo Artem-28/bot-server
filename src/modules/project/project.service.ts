@@ -1,20 +1,17 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { CreateProjectDto } from './dto/create-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Project } from './project.entity';
-import { User } from '../user/user.entity';
-import {
-  DeleteQueryBuilder,
-  Repository,
-  SelectQueryBuilder,
-  UpdateQueryBuilder,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 
-import {
-  IFilterQueryBuilder,
-  whereQueryBuilder,
-} from '../../base/helpers/where-query-builder';
-import { ProjectSubscriberService } from '../project-subscriber/project-subscriber.service';
+// Entity
+import { Project } from '@/modules/project/project.entity';
+
+// Types
+import { UpdateProjectDto } from '@/modules/project/dto/update-project.dto';
+import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
+import { Options } from '@/base/interfaces/service.interface';
+
+// Helpers
+import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
 
 @Injectable()
 export class ProjectService {
@@ -23,137 +20,78 @@ export class ProjectService {
     private readonly _projectRepository: Repository<Project>,
   ) {}
 
-  // Обновление проекта
-  private async _update(
-    projectId: number,
-    payload: Partial<CreateProjectDto>,
-    filters: IFilterQueryBuilder[] = [],
-  ): Promise<boolean> {
-    const rootQuery = this._projectRepository
-      .createQueryBuilder()
-      .update()
-      .set(payload);
-
-    filters.push({ field: 'id', value: projectId });
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as UpdateQueryBuilder<Project>;
-
-    const response = await query.execute();
-    return !!response.affected;
-  }
-
-  // Удаление проекта
-  private async _remove(
-    projectId: number,
-    filters: IFilterQueryBuilder[] = [],
-  ): Promise<boolean> {
-    const rootQuery = this._projectRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Project);
-
-    filters.push({ field: 'id', value: projectId });
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as DeleteQueryBuilder<Project>;
-
-    const response = await query.execute();
-    return !!response.affected;
-  }
-
-  // Обработка обновления проекта
-  public async updateProjectHandle(
-    projectId: number,
-    payload: Partial<CreateProjectDto>,
-    filters: IFilterQueryBuilder[] = [],
-  ): Promise<Project> {
-    const success = await this._update(projectId, payload, filters);
-    if (!success) {
-      throw new HttpException('project.update', 500);
-    }
-    return this.getById(projectId, filters);
-  }
-
-  // Обработка удаления проекта
-  public async removeProjectHandle(
-    projectId: number,
-    filters: IFilterQueryBuilder[] = [],
-  ): Promise<void> {
-    const success = await this._remove(projectId, filters);
-    if (!success) {
-      throw new HttpException('project.remove', 500);
-    }
-  }
-
-  // Создание нового проекта
-  public async create(userId: number, payload: CreateProjectDto) {
-    // const project = new Project(payload);
-    // project.user = user;
-    // const response = await this._projectRepository.save(project);
-    const response = await this._projectRepository.save({
-      userId,
-      ...payload,
-    });
-    return new Project(response);
-  }
-
-  // Получение всех проектов пользователя
-  public async getProjectsByUserId(userId: number): Promise<Project[]> {
-    return await this._projectRepository
-      .createQueryBuilder('project')
-      .where({ userId })
-      .getMany();
-  }
-
-  // Получение проекта по id
-  public async getById(
-    projectId: number,
-    filters: IFilterQueryBuilder[] = [],
+  // Создание проекта
+  public async createProject(
+    dto: CreateProjectDto,
+    options: Options,
   ): Promise<Project | null> {
-    const rootQuery = this._projectRepository.createQueryBuilder('project');
-    filters.push({ field: 'id', value: projectId });
-
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as SelectQueryBuilder<Project>;
-    const response = await query.getOne();
-
+    const { throwException } = options;
+    const response = await this._projectRepository.save(dto);
+    if (!response && throwException) {
+      throw new HttpException('project.create', 500);
+    }
     if (!response) return null;
     return new Project(response);
   }
 
-  // Получение колличества записей Project в бд
-  public async getCountOfProjects(
-    filters: IFilterQueryBuilder[] = [],
-  ): Promise<number> {
-    const rootQuery = this._projectRepository.createQueryBuilder();
-    const query = whereQueryBuilder(
-      rootQuery,
-      filters,
-    ) as SelectQueryBuilder<Project>;
-    console.log(filters);
-    return await query.getCount();
+  // Обновление проекта
+  public async updateProject(
+    id: number,
+    dto: UpdateProjectDto,
+    options: Options = {},
+  ): Promise<boolean> {
+    const response = await this._projectRepository
+      .createQueryBuilder()
+      .update()
+      .set(dto)
+      .where({ id })
+      .execute();
+    const success = !!response.affected;
+    if (!success && options.throwException) {
+      throw new HttpException('project.update', 500);
+    }
+    return success;
   }
 
-  // Проверка прав пользователя для проекта
-  public async checkPermissionProject(
-    projectId: number,
-    user: User,
-    throwException: boolean = false,
+  // Удаление проекта
+  public async removeProject(
+    id: number,
+    options: Options = {},
   ): Promise<boolean> {
-    const filters: IFilterQueryBuilder[] = [
-      { field: 'id', value: projectId },
-      { field: 'userId', value: user.id },
-    ];
-    const count = await this.getCountOfProjects(filters);
-    const check = !!count;
-    if (throwException && !check) {
-      throw new HttpException('base.permission_denied', 403);
+    const response = await this._projectRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Project)
+      .where({ id })
+      .execute();
+    const success = !!response.affected;
+    if (!success && options.throwException) {
+      throw new HttpException('project.delete', 500);
     }
-    return check;
+    return success;
+  }
+
+  // Получить один проект
+  public async getOneProject(options: Options): Promise<Project | null> {
+    const { filter, throwException, relation } = options;
+    const queryHelper = new QueryBuilderHelper(this._projectRepository, {
+      filter,
+      relation,
+    });
+    const response = await queryHelper.builder.getOne();
+    if (!response && throwException) {
+      throw new HttpException('project.get', 500);
+    }
+    if (!response) return null;
+    return response;
+  }
+
+  // Получить список проектов
+  public async getProjects(options: Options = {}): Promise<Project[]> {
+    const { filter } = options;
+    const queryHelper = new QueryBuilderHelper(this._projectRepository, {
+      filter,
+    });
+    return await queryHelper.builder.getMany();
   }
 }

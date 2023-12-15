@@ -1,16 +1,7 @@
-export interface IResponseSubscriberUser {
-  id: number;
-  subscriptionAt: Date;
-  email?: string;
-}
+import { User } from '@/modules/user/user.entity';
+import { Project } from '@/modules/project/project.entity';
 
-export interface IResponseSubscriberProject {
-  id: number;
-  subscriptionAt: Date;
-  title?: string;
-}
-
-export interface IResponseCombineUserSubscriber
-  extends IResponseSubscriberUser {
-  projects: IResponseSubscriberProject[];
+export interface IResponseCombineUserSubscriber {
+  user: User;
+  projects: Project[];
 }

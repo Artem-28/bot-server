@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
-import { BaseEntity } from '../../base/entities/base.entity';
-import { ConfirmationTypeEnum } from '../../base/enum/confirmation/confirmation-type.enum';
+import { BaseEntity } from '@/base/entities/base.entity';
+import { ConfirmationTypeEnum } from '@/base/enum/confirmation/confirmation-type.enum';
 
 @Entity({ name: 'confirmation_codes' })
 export class ConfirmationCode extends BaseEntity {

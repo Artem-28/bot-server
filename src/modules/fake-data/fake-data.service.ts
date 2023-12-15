@@ -1,11 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/user.entity';
-import { Repository } from 'typeorm';
-import { Project } from '../project/project.entity';
-import { CreateUserDto } from '../user/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { FakeDataDto } from './dto/fake-data.dto';
+import { Repository } from 'typeorm';
+
+// Module
+
+// Controller
+
+// Service
+
+// Entity
+import { User } from '@/modules/user/user.entity';
+import { Project } from '@/modules/project/project.entity';
+
+// Guard
+
+// Types
+import { CreateUserDto } from '@/modules/user/dto/create-user.dto';
+import { FakeDataDto } from '@/modules/fake-data/dto/fake-data.dto';
+
+// Helper
 
 @Injectable()
 export class FakeDataService {
