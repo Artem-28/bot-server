@@ -4,25 +4,39 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
 // Module
-
 // Controller
-
 // Service
-
 // Entity
 import { User } from '@/modules/user/user.entity';
 import { Project } from '@/modules/project/project.entity';
+import { DropdownOption } from '@/modules/dropdown-option/dropdown-option.entity';
 
 // Guard
-
 // Types
 import { CreateUserDto } from '@/modules/user/dto/create-user.dto';
 import { FakeDataDto } from '@/modules/fake-data/dto/fake-data.dto';
+import { CreateDropdownOptionDto } from '@/modules/dropdown-option/dto/create-dropdown-option.dto';
+import { QuestionTypeEnum } from '@/base/enum/dropdown-option/question-type.enum';
+import { DropdownTypeEnum } from '@/base/enum/dropdown-option/dropdown-type.enum';
 
 // Helper
 
 @Injectable()
 export class FakeDataService {
+  private _questionTypeData: CreateDropdownOptionDto[] = [
+    {
+      type: DropdownTypeEnum.QUESTION_TYPE,
+      code: QuestionTypeEnum.FREE_TEXT,
+      label: `question_type.${QuestionTypeEnum.FREE_TEXT}`,
+      enable: true,
+    },
+    {
+      type: DropdownTypeEnum.QUESTION_TYPE,
+      code: QuestionTypeEnum.BUTTONS,
+      label: `question_type.${QuestionTypeEnum.BUTTONS}`,
+      enable: true,
+    },
+  ];
   private _userData: CreateUserDto[] = [
     {
       email: 'artem.mikheev.git@gmail.com',
@@ -48,6 +62,8 @@ export class FakeDataService {
     private readonly _userRepository: Repository<User>,
     @InjectRepository(Project)
     private readonly _projectRepository: Repository<Project>,
+    @InjectRepository(DropdownOption)
+    private readonly _dropdownRepository: Repository<DropdownOption>,
   ) {}
 
   private async _setProjects(user: User, count = 1) {
@@ -83,12 +99,29 @@ export class FakeDataService {
     }
   }
 
+  private async _seedQuestionTypes() {
+    for (const data of this._questionTypeData) {
+      await this._dropdownRepository
+        .createQueryBuilder()
+        .insert()
+        .into(DropdownOption)
+        .values(data)
+        .orUpdate(['label', 'enable', 'type'], 'code', {
+          skipUpdateIfNoValuesChanged: true,
+        })
+        .execute();
+    }
+  }
+
   public async seed(param: FakeDataDto) {
     if (param.users) {
       await this._seedUsers();
     }
     if (param.projects) {
       await this._seedProject();
+    }
+    if (param.questionTypes) {
+      await this._seedQuestionTypes();
     }
   }
 }

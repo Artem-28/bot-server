@@ -12,6 +12,13 @@ export class CreateProjectUsersTable1696257988154
   public async up(queryRunner: QueryRunner): Promise<void> {
     const columns = [
       new TableColumn({
+        name: 'id',
+        type: 'int',
+        isGenerated: true,
+        isPrimary: true,
+        generationStrategy: 'increment',
+      }),
+      new TableColumn({
         name: 'project_id',
         type: 'int',
       }),

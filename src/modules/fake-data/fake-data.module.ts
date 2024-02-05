@@ -12,6 +12,7 @@ import { FakeDataService } from '@/modules/fake-data/fake-data.service';
 // Entity
 import { Project } from '@/modules/project/project.entity';
 import { User } from '@/modules/user/user.entity';
+import { DropdownOption } from '@/modules/dropdown-option/dropdown-option.entity';
 
 // Guard
 
@@ -20,7 +21,7 @@ import { User } from '@/modules/user/user.entity';
 // Helper
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Project])],
+  imports: [TypeOrmModule.forFeature([User, Project, DropdownOption])],
   controllers: [FakeDataController],
   providers: [FakeDataService],
 })

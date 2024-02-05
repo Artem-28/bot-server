@@ -11,9 +11,12 @@ import { Project } from '@/modules/project/project.entity';
 import { Script } from '@/modules/script/script.entity';
 import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
 import { User } from '@/modules/user/user.entity';
+import { DropdownOption } from '@/modules/dropdown-option/dropdown-option.entity';
+
+// Helpers
 import { toArray } from '@/base/helpers/array-helper';
 
-type Entity = Project | Script | ProjectSubscriber | User;
+type Entity = Project | Script | ProjectSubscriber | User | DropdownOption;
 interface Options {
   alias?: string;
   filter?: QueryFilter | QueryFilter[];

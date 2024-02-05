@@ -6,4 +6,7 @@ export class FakeDataDto {
 
   @IsBoolean()
   projects: boolean;
+
+  @IsBoolean()
+  questionTypes: boolean;
 }
