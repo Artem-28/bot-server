@@ -146,10 +146,14 @@ export class ProjectSubscriberService {
       filter: [
         { field: 'projectId', value: authUser.projectIds },
         { field: 'userId', value: userId },
+        // { field: 'projectId', value: authUser.projectIds },
+        // { field: 'userId', value: userId },
       ],
       relation: [{ name: 'user' }, { name: 'project' }],
     });
+    console.log('<<<<<<<<<<<RES1');
     const projectSubscribers = await queryHelper.builder.getMany();
+    console.log('<<<<<<<<<<<RES2', projectSubscribers);
     // Форматируем результат
     return this._combineSubscriberByUser(projectSubscribers, userId);
   }

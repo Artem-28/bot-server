@@ -4,6 +4,5 @@ export class CreateScriptDto {
   @IsDefined()
   title: string;
 
-  @IsDefined()
-  projectId: number;
+  projectId?: number;
 }

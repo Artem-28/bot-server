@@ -143,22 +143,4 @@ export class ProjectController {
       throw new HttpException(e.response, e.status);
     }
   }
-
-  // Получение скриптов у проекта
-  @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_VIEW],
-    'or',
-  )
-  @Get(':projectId/scripts')
-  async getProjectScripts(@Req() req, @Param() params) {
-    try {
-      return await this.projectService.getOneProject({
-        filter: { field: 'id', value: params.projectId },
-        relation: { name: 'scripts' },
-      });
-    } catch (e) {
-      throw new HttpException(e.response, e.status);
-    }
-  }
 }

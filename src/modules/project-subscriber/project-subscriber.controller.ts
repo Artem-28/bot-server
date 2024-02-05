@@ -1,24 +1,21 @@
 import {
   Body,
-  Req,
   Controller,
-  Post,
-  UseGuards,
-  HttpException,
   Get,
+  HttpException,
   Param,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 
 // Module
-
 // Controller
-
 // Service
 import { ProjectSubscriberService } from '@/modules/project-subscriber/project-subscriber.service';
 import { User } from '@/modules/user/user.entity';
 
 // Entity
-
 // Guard
 import { PermissionGuard } from '@/modules/check-permission/guards/permission.guard';
 import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
@@ -29,34 +26,28 @@ import { PermissionEnum } from '@/base/enum/permission/permission.enum';
 import { SubscribeProjectDto } from '@/modules/project-subscriber/dto/subscribe-project.dto';
 import { IResponseCombineUserSubscriber } from '@/modules/project-subscriber/interfaces/response-project-subscriber.interface';
 import { SearchProjectSubscriberDto } from '@/modules/project-subscriber/dto/search-project-subscriber.dto';
+import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
 
 // Helper
 
 @Controller('project-subscribers')
 @UseGuards(AuthJwtGuard)
-@UseGuards(PermissionGuard)
 export class ProjectSubscriberController {
   constructor(readonly projectSubscriberService: ProjectSubscriberService) {}
 
   // Добавление нового подписчика в проект
   @Post('/subscribe')
+  @UseGuards(PermissionGuard)
   @Permission(PermissionEnum.PROJECT_SUBSCRIBE)
   public async subscribe(
     @Req() req,
     @Body() body: SubscribeProjectDto,
-  ): Promise<IResponseCombineUserSubscriber> {
+  ): Promise<ProjectSubscriber> {
     try {
-      const user = req.user;
       // Добавляем пользователя в проект
-      const projectSubscriber =
-        await this.projectSubscriberService.subscribeUserToProject(body, {
-          throwException: true,
-        });
-      // Получаем подписчика и все проекты на которые он подписан
-      return await this.projectSubscriberService.getSubscriber(
-        user,
-        projectSubscriber.userId,
-      );
+      return await this.projectSubscriberService.subscribeUserToProject(body, {
+        throwException: true,
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -68,17 +59,14 @@ export class ProjectSubscriberController {
   public async unsubscribe(
     @Req() req,
     @Body() body: SearchProjectSubscriberDto,
-  ): Promise<IResponseCombineUserSubscriber> {
+  ): Promise<boolean> {
     try {
-      const user = req.user;
       // Отписываемся от проекта
-      await this.projectSubscriberService.unsubscribeUserFromProject(body, {
-        throwException: true,
-      });
-      // Получаем подписчика и все проекты на которые он подписан
-      return await this.projectSubscriberService.getSubscriber(
-        user,
-        body.userId,
+      return await this.projectSubscriberService.unsubscribeUserFromProject(
+        body,
+        {
+          throwException: true,
+        },
       );
     } catch (e) {
       throw new HttpException(e.response, e.status);

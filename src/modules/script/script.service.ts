@@ -1,25 +1,22 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {HttpException, Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
 
 // Module
-
 // Controller
-
 // Service
-
 // Entity
-import { Script } from '@/modules/script/script.entity';
+import {Script} from '@/modules/script/script.entity';
 
 // Guard
-
 // Types
-import { UpdateScriptDto } from '@/modules/script/dto/update-script-dto';
-import { Options } from '@/base/interfaces/service.interface';
-import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
+import {Options} from '@/base/interfaces/service.interface';
+import {CreateScriptDto} from '@/modules/script/dto/create-script.dto';
+import {SearchScriptParams} from '@/modules/script/util/search-script.params';
 
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import {validateUpdateDto} from '@/modules/script/util/validate-dto';
 
 @Injectable()
 export class ScriptService {
@@ -29,12 +26,18 @@ export class ScriptService {
   ) {}
 
   // Удаление скрипта по id
-  public async removeScript(id: number, options?: Options): Promise<boolean> {
+  public async removeScript(
+    searchParams: SearchScriptParams,
+    options?: Options,
+  ): Promise<boolean> {
+    const id = searchParams.scriptId;
+    const projectId = searchParams.projectId;
     const response = await this._scriptRepository
       .createQueryBuilder()
       .delete()
       .from(Script)
       .where({ id })
+      .andWhere({ projectId })
       .execute();
 
     const success = !!response.affected;
@@ -59,16 +62,19 @@ export class ScriptService {
 
   // Обновление скрипта
   public async updateScript(
-    id: number,
-    dto: UpdateScriptDto,
+    searchParams: SearchScriptParams,
+    data: Partial<CreateScriptDto>,
     options?: Options,
   ): Promise<boolean> {
-    delete dto.projectId;
+    const dto = validateUpdateDto(data);
+    const id = searchParams.scriptId;
+    const projectId = searchParams.projectId;
     const response = await this._scriptRepository
       .createQueryBuilder()
       .update()
       .set(dto)
       .where({ id })
+      .andWhere({ projectId })
       .execute();
 
     const success = !!response.affected;
@@ -77,6 +83,16 @@ export class ScriptService {
       throw new HttpException('scriptUpdate.update', 500);
     }
     return success;
+  }
+
+  // Полуение списка скриптов
+  public async getScripts(options: Options): Promise<Script[]> {
+    const { filter, relation } = options;
+    const queryHelper = new QueryBuilderHelper(this._scriptRepository, {
+      filter,
+      relation,
+    });
+    return await queryHelper.builder.getMany();
   }
 
   // Получение одного скрипта

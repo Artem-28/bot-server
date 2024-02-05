@@ -47,18 +47,19 @@ export default class QueryBuilderHelper<T extends Entity> {
   private _setFilter(): void {
     const whereFilter = this._queryFilter.find((filter) => !filter.operator);
     if (whereFilter) {
-      this._builder.where(whereFilter.field, { value: whereFilter.value });
+      this._builder.where(whereFilter.field, whereFilter.value);
     }
     this._queryFilter.forEach((filter) => {
+      if (filter.field === whereFilter.field) return;
       switch (filter.operator) {
         case 'and':
-          this._builder.andWhere(filter.field, { value: filter.value });
+          this._builder.andWhere(filter.field, filter.value);
           break;
         case 'or':
-          this._builder.orWhere(filter.field, { value: filter.value });
+          this._builder.orWhere(filter.field, filter.value);
           break;
         default:
-          this._builder.andWhere(filter.field, { value: filter.value });
+          this._builder.andWhere(filter.field, filter.value);
           break;
       }
     });
@@ -91,11 +92,13 @@ export default class QueryBuilderHelper<T extends Entity> {
   private _formatterFilter(filter: QueryFilter) {
     const isArrayValue = Array.isArray(filter.value);
     const operator = isArrayValue ? 'IN' : '=';
-    const valueAlias = isArrayValue ? '(:...value)' : ':value';
+    const valueAlias = isArrayValue
+      ? `(:...${filter.field})`
+      : `:${filter.field}`;
     const field = `${this._alias}.${filter.field} ${operator} ${valueAlias}`;
     return {
       field,
-      value: filter.value,
+      value: { [filter.field]: filter.value },
     };
   }
 
