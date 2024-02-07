@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
 import { QuestionTypeEnum } from '@/base/enum/dropdown-option/question-type.enum';
 import { DropdownTypeEnum } from '@/base/enum/dropdown-option/dropdown-type.enum';
 
-export class DropdownOptionsTable1707151513256 implements MigrationInterface {
+export class CreateDropdownOptionsTable1707151513256 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const columns = [
       new TableColumn({

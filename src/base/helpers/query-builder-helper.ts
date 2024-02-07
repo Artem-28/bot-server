@@ -84,11 +84,11 @@ export default class QueryBuilderHelper<T extends Entity> {
   private _setRelation() {
     Object.values(this._queryRelation).forEach((relation) => {
       const { name, alias } = relation;
-      if (!this._querySelect.hasOwnProperty(alias)) {
-        this._builder.innerJoinAndSelect(name, alias);
+      if (this._querySelect.hasOwnProperty(alias)) {
+        this._builder.leftJoin(name, alias);
         return;
       }
-      this._builder.innerJoin(name, alias);
+      this._builder.leftJoinAndSelect(name, alias);
     });
   }
 

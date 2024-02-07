@@ -73,6 +73,7 @@ export class CheckPermissionService {
   private async _loadRelations(user: User, permissions: PermissionEnum[]) {
     const queryHelper = new QueryBuilderHelper(this._userRepository, {
       filter: { field: 'id', value: user.id },
+      relation: { name: 'subscribedProjects' },
     });
     permissions.forEach((permission) => {
       switch (permission) {

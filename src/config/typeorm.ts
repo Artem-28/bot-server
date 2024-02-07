@@ -15,7 +15,7 @@ const config = {
   migrations: ['dist/migrations/*{.ts,.js}'],
   autoLoadEntities: true,
   logging: true,
-  synchronize: true,
+  synchronize: false,
   localTimezone: false,
 };
 
