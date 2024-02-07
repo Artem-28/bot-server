@@ -1,22 +1,22 @@
-import {HttpException, Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Repository} from 'typeorm';
+import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 // Module
 // Controller
 // Service
 // Entity
-import {Script} from '@/modules/script/script.entity';
+import { Script } from '@/modules/script/script.entity';
 
 // Guard
 // Types
-import {Options} from '@/base/interfaces/service.interface';
-import {CreateScriptDto} from '@/modules/script/dto/create-script.dto';
-import {SearchScriptParams} from '@/modules/script/util/search-script.params';
+import { Options } from '@/base/interfaces/service.interface';
+import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
+import { SearchScriptParams } from '@/modules/script/util/search-script.params';
 
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
-import {validateUpdateDto} from '@/modules/script/util/validate-dto';
+import { validateUpdateDto } from '@/modules/script/util/validate-dto';
 
 @Injectable()
 export class ScriptService {

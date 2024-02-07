@@ -81,6 +81,7 @@ export class ScriptController {
           { field: 'id', value: param.scriptId },
           { field: 'project_id', value: param.projectId },
         ],
+        relation: { name: 'questions' },
         throwException: true,
       });
     } catch (e) {

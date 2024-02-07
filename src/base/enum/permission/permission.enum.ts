@@ -13,5 +13,11 @@ export enum PermissionEnum {
   SCRIPT_CREATE = 'script_create', // Создание
   SCRIPT_UPDATE = 'script_update', // Обновление ресурса
   SCRIPT_VIEW = 'script_view', // Инфо о ресурсе
-  SCRIPT_DELETE = 'script_delete' // Удаление ресурса
+  SCRIPT_DELETE = 'script_delete', // Удаление ресурса
+
+  QUESTION_ACCESS = 'question_access', // Разрешены все действия
+  QUESTION_CREATE = 'question_create', // Создание
+  QUESTION_UPDATE = 'question_update', // Обновление ресурса
+  QUESTION_VIEW = 'question_view', // Инфо о ресурсе
+  QUESTION_DELETE = 'question_delete', // Удаление ресурса
 }

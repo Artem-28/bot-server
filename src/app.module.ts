@@ -22,6 +22,7 @@ import { FakeDataModule } from '@/modules/fake-data/fake-data.module';
 import { ProjectSubscriberModule } from '@/modules/project-subscriber/project-subscriber.module';
 import { CheckPermissionModule } from '@/modules/check-permission/check-permission.module';
 import { DropdownOptionModule } from './modules/dropdown-option/dropdown-option.module';
+import { QuestionModule } from './modules/question/question.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { DropdownOptionModule } from './modules/dropdown-option/dropdown-option.
     ProjectSubscriberModule,
     CheckPermissionModule,
     DropdownOptionModule,
+    QuestionModule,
   ],
   controllers: [],
   providers: [

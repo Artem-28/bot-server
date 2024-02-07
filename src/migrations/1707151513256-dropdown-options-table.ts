@@ -1,5 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
 import { QuestionTypeEnum } from '@/base/enum/dropdown-option/question-type.enum';
+import { DropdownTypeEnum } from '@/base/enum/dropdown-option/dropdown-type.enum';
 
 export class DropdownOptionsTable1707151513256 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -12,9 +13,14 @@ export class DropdownOptionsTable1707151513256 implements MigrationInterface {
         generationStrategy: 'increment',
       }),
       new TableColumn({
+        name: 'type',
+        type: 'enum',
+        enum: [DropdownTypeEnum.QUESTION_TYPE],
+      }),
+      new TableColumn({
         name: 'code',
         type: 'enum',
-        enum: [QuestionTypeEnum.BUTTONS, QuestionTypeEnum.FREE_TEXT],
+        enum: [QuestionTypeEnum.FREE_TEXT, QuestionTypeEnum.BUTTONS],
       }),
       new TableColumn({
         name: 'label',

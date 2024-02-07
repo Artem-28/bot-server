@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 // Module
 
 // Controller
@@ -8,6 +8,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 // Entity
 import { BaseEntity } from '@/base/entities/base.entity';
 import { Project } from '@/modules/project/project.entity';
+import { Question } from '@/modules/question/question.entity';
 
 // Guard
 
@@ -28,6 +29,9 @@ export class Script extends BaseEntity {
   })
   @JoinColumn({ name: 'project_id' })
   project: Project;
+
+  @OneToMany(() => Question, (question) => question.script)
+  public questions: Question[];
 
   constructor(partial: Partial<Script>) {
     super();
