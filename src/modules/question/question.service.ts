@@ -72,7 +72,7 @@ export class QuestionService {
     searchParams: SearchQuestionParams,
     data: Partial<CreateQuestionDto>,
     options?: Options,
-  ) {
+  ): Promise<Question> {
     const { questionId, scriptId, projectId } = searchParams;
     const throwException = options && options.throwException;
     let startQuestion: Question | null = null;
@@ -115,7 +115,7 @@ export class QuestionService {
     } catch (err) {
       await queryRunner.rollbackTransaction();
       if (throwException) {
-        throw new HttpException('question.create', 500);
+        throw new HttpException('question.update', 500);
       }
       return null;
     } finally {
