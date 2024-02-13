@@ -10,16 +10,18 @@ import { Repository } from 'typeorm';
 import { User } from '@/modules/user/user.entity';
 import { Project } from '@/modules/project/project.entity';
 import { DropdownOption } from '@/modules/dropdown-option/dropdown-option.entity';
+import { Permission } from '@/modules/permission/permission.entity';
 
 // Guard
 // Types
-import { CreateUserDto } from '@/modules/user/dto/create-user.dto';
+import { UserDto } from '@/modules/user/dto/user.dto';
 import { FakeDataDto } from '@/modules/fake-data/dto/fake-data.dto';
 import { CreateDropdownOptionDto } from '@/modules/dropdown-option/dto/create-dropdown-option.dto';
 import { QuestionTypeEnum } from '@/base/enum/dropdown-option/question-type.enum';
 import { DropdownTypeEnum } from '@/base/enum/dropdown-option/dropdown-type.enum';
 
 // Helper
+import permissionsResource from '@/modules/fake-data/resource/permissions.resource';
 
 @Injectable()
 export class FakeDataService {
@@ -37,7 +39,7 @@ export class FakeDataService {
       enable: true,
     },
   ];
-  private _userData: CreateUserDto[] = [
+  private _userData: UserDto[] = [
     {
       email: 'artem.mikheev.git@gmail.com',
       password: '123456',
@@ -64,6 +66,8 @@ export class FakeDataService {
     private readonly _projectRepository: Repository<Project>,
     @InjectRepository(DropdownOption)
     private readonly _dropdownRepository: Repository<DropdownOption>,
+    @InjectRepository(Permission)
+    private readonly _permissionRepository: Repository<Permission>,
   ) {}
 
   private async _setProjects(user: User, count = 1) {
@@ -113,6 +117,20 @@ export class FakeDataService {
     }
   }
 
+  private async _seedPermissions() {
+    for (const data of permissionsResource) {
+      await this._permissionRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Permission)
+        .values(data)
+        .orUpdate(['label', 'parent_code'], 'code', {
+          skipUpdateIfNoValuesChanged: true,
+        })
+        .execute();
+    }
+  }
+
   public async seed(param: FakeDataDto) {
     if (param.users) {
       await this._seedUsers();
@@ -122,6 +140,9 @@ export class FakeDataService {
     }
     if (param.questionTypes) {
       await this._seedQuestionTypes();
+    }
+    if (param.permissions) {
+      await this._seedPermissions();
     }
   }
 }

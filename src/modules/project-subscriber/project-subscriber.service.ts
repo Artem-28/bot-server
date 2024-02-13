@@ -23,7 +23,7 @@ import { Options } from '@/base/interfaces/service.interface';
 import { SubscribeProjectDto } from '@/modules/project-subscriber/dto/subscribe-project.dto';
 
 // Helper
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 
 @Injectable()
 export class ProjectSubscriberService {

@@ -9,6 +9,7 @@ import { BaseEntity } from '@/base/entities/base.entity';
 import { User } from '@/modules/user/user.entity';
 import { Script } from '@/modules/script/script.entity';
 import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+import { PermissionUser } from '@/modules/permission/permission-user.entity';
 
 // Entity
 
@@ -38,6 +39,9 @@ export class Project extends BaseEntity {
     (projectSubscriber) => projectSubscriber.project,
   )
   public subscribers: User[];
+
+  @OneToMany(() => PermissionUser, (permissionUser) => permissionUser.project)
+  public permissions: PermissionUser[];
 
   // @ManyToMany(() => User, (user) => user.subscribedProjects)
   // @JoinTable({

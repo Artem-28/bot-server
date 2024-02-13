@@ -13,12 +13,12 @@ import { Question } from '@/modules/question/question.entity';
 // Guard
 
 // Types
-import { CreateQuestionDto } from '@/modules/question/dto/create-question.dto';
+import { QuestionDto } from '@/modules/question/dto/question.dto';
 import { Options } from '@/base/interfaces/service.interface';
 import { SearchQuestionParams } from '@/modules/question/util/search-question.params';
 
 // Helper
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 
 @Injectable()
 export class QuestionService {
@@ -29,11 +29,11 @@ export class QuestionService {
   ) {}
   // Создание
   public async createQuestion(
-    dto: CreateQuestionDto,
+    dto: QuestionDto,
     options?: Options,
   ): Promise<Question> {
     const throwException = options && options.throwException;
-    const question = new Question(dto);
+    let question = new Question(dto);
     let startQuestion: Question | null = null;
 
     const queryRunner = this._dataSource.createQueryRunner();
@@ -41,22 +41,25 @@ export class QuestionService {
     await queryRunner.startTransaction();
     try {
       // Если передан флаг для установки стартового блока
-      if (dto.started) {
-        const filter = [
-          { field: 'scriptId', value: dto.scriptId },
-          { field: 'started', value: true },
-        ];
+      if (question.started) {
         // Находим стартовый блок если он есть
-        startQuestion = await this.getOneQuestion({ filter });
+        startQuestion = await this.getOneQuestion({
+          filter: [
+            { field: 'scriptId', value: question.scriptId },
+            { field: 'started', value: true },
+          ],
+        });
       }
       // Если есть стартовый блок то переключаем флаг
       if (startQuestion) {
         startQuestion.update({ started: false });
         await queryRunner.manager.save(startQuestion);
       }
-      const response = await queryRunner.manager.save(question);
+
+      question = await queryRunner.manager.save(question);
+
       await queryRunner.commitTransaction();
-      return response;
+      return question;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       if (throwException) {
@@ -70,7 +73,7 @@ export class QuestionService {
 
   public async updateQuestion(
     searchParams: SearchQuestionParams,
-    data: Partial<CreateQuestionDto>,
+    data: Partial<QuestionDto>,
     options?: Options,
   ): Promise<Question> {
     const { questionId, scriptId, projectId } = searchParams;

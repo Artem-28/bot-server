@@ -11,7 +11,7 @@ import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
 import { Options } from '@/base/interfaces/service.interface';
 
 // Helpers
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 
 @Injectable()
 export class ProjectService {

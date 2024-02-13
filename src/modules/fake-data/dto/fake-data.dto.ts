@@ -9,4 +9,7 @@ export class FakeDataDto {
 
   @IsBoolean()
   questionTypes: boolean;
+
+  @IsBoolean()
+  permissions: boolean;
 }

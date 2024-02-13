@@ -26,8 +26,8 @@ import { Permission } from '@/modules/check-permission/decorators/permission.dec
 
 // Types
 import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
-import { PermissionEnum } from '@/base/enum/permission/permission.enum';
 import { SearchScriptParams } from '@/modules/script/util/search-script.params';
+import { SCRIPT_CREATE } from '@/modules/check-permission/access-controllers/permission-controller.access';
 
 // Helper
 
@@ -39,12 +39,8 @@ export class ScriptController {
   // Создание скрипта
   @Post()
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.SCRIPT_ACCESS, PermissionEnum.SCRIPT_CREATE],
-    'or',
-  )
+  @Permission(SCRIPT_CREATE)
   public async create(
-    @Req() req,
     @Param() param,
     @Body() body: CreateScriptDto,
   ): Promise<Script> {
@@ -59,7 +55,6 @@ export class ScriptController {
   // Получение списка скриптов в проекте
   @Get()
   @UseGuards(PermissionGuard)
-  @Permission([PermissionEnum.SCRIPT_ACCESS, PermissionEnum.SCRIPT_VIEW], 'or')
   public async getScripts(@Param() param) {
     try {
       return await this.scriptService.getScripts({
@@ -73,7 +68,6 @@ export class ScriptController {
   // Получение инфомации по скрипту
   @Get(':scriptId')
   @UseGuards(PermissionGuard)
-  @Permission([PermissionEnum.SCRIPT_ACCESS, PermissionEnum.SCRIPT_VIEW], 'or')
   public async info(@Req() req, @Param() param: SearchScriptParams) {
     try {
       return await this.scriptService.getOneScript({
@@ -92,10 +86,6 @@ export class ScriptController {
   // Обновление скрипта
   @Patch(':scriptId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.SCRIPT_ACCESS, PermissionEnum.SCRIPT_UPDATE],
-    'or',
-  )
   public async update(
     @Req() req,
     @Param() param: SearchScriptParams,
@@ -117,10 +107,6 @@ export class ScriptController {
   // Удаление скрипта
   @Delete(':scriptId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.SCRIPT_ACCESS, PermissionEnum.SCRIPT_DELETE],
-    'or',
-  )
   public async remove(
     @Req() req,
     @Param() param: SearchScriptParams,

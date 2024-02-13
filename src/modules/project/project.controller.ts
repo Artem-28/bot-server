@@ -12,9 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 // Module
-
 // Controller
-
 // Service
 import { ProjectService } from '@/modules/project/project.service';
 import { ProjectSubscriberService } from '@/modules/project-subscriber/project-subscriber.service';
@@ -26,10 +24,14 @@ import { Project } from '@/modules/project/project.entity';
 import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
 import { PermissionGuard } from '@/modules/check-permission/guards/permission.guard';
 import { Permission } from '@/modules/check-permission/decorators/permission.decorator';
+import {
+  PROJECT_DELETE,
+  PROJECT_UPDATE,
+  PROJECT_VIEW,
+} from '@/modules/check-permission/access-controllers/permission-controller.access';
 
 // Types
 import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
-import { PermissionEnum } from '@/base/enum/permission/permission.enum';
 import { UpdateProjectDto } from '@/modules/project/dto/update-project.dto';
 
 // Helper
@@ -87,14 +89,11 @@ export class ProjectController {
   // Получение подробной информации по проекту
   @Get(':projectId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_VIEW],
-    'or',
-  )
-  async info(@Req() req, @Param() params: any) {
+  @Permission(PROJECT_VIEW)
+  async info(@Param() param): Promise<Project> {
     try {
       return await this.projectService.getOneProject({
-        filter: { field: 'id', value: params.projectId },
+        filter: { field: 'id', value: param.projectId },
       });
     } catch (e) {
       throw new HttpException(e.response, e.status);
@@ -104,15 +103,11 @@ export class ProjectController {
   // Обновление проекта
   @Patch(':projectId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_UPDATE],
-    'or',
-  )
+  @Permission(PROJECT_UPDATE)
   async update(
-    @Req() req,
-    @Param() params: any,
+    @Param() params,
     @Body() body: UpdateProjectDto,
-  ) {
+  ): Promise<Project> {
     try {
       const id = params.projectId;
       // Обновляем проект
@@ -131,14 +126,13 @@ export class ProjectController {
   // Удаление проекта
   @Delete(':projectId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.PROJECT_ACCESS, PermissionEnum.PROJECT_DELETE],
-    'or',
-  )
-  async remove(@Req() req, @Param() params) {
+  @Permission(PROJECT_DELETE)
+  async remove(@Param() param): Promise<boolean> {
     try {
-      const id = params.projectId;
-      await this.projectService.removeProject(id, { throwException: true });
+      const id = param.projectId;
+      return await this.projectService.removeProject(id, {
+        throwException: true,
+      });
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }

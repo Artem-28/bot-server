@@ -24,8 +24,7 @@ import { PermissionGuard } from '@/modules/check-permission/guards/permission.gu
 import { Permission } from '@/modules/check-permission/decorators/permission.decorator';
 
 // Types
-import { PermissionEnum } from '@/base/enum/permission/permission.enum';
-import { CreateQuestionDto } from '@/modules/question/dto/create-question.dto';
+import { QuestionDto } from '@/modules/question/dto/question.dto';
 import { SearchScriptParams } from '@/modules/script/util/search-script.params';
 import { SearchQuestionParams } from '@/modules/question/util/search-question.params';
 
@@ -38,13 +37,9 @@ export class QuestionController {
   // Создание нового question
   @Post()
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.QUESTION_ACCESS, PermissionEnum.QUESTION_CREATE],
-    'or',
-  )
   public async create(
     @Param() param: SearchScriptParams,
-    @Body() body: CreateQuestionDto,
+    @Body() body: QuestionDto,
   ): Promise<Question> {
     try {
       body.scriptId = +param.scriptId;
@@ -59,10 +54,6 @@ export class QuestionController {
   // Удаление question
   @Delete(':questionId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.QUESTION_ACCESS, PermissionEnum.QUESTION_DELETE],
-    'or',
-  )
   public async remove(@Param() param: SearchQuestionParams): Promise<boolean> {
     try {
       return await this.questionService.removeQuestion(param, {
@@ -76,13 +67,9 @@ export class QuestionController {
   // Обновление и получение обновленного question
   @Patch(':questionId')
   @UseGuards(PermissionGuard)
-  @Permission(
-    [PermissionEnum.QUESTION_ACCESS, PermissionEnum.QUESTION_DELETE],
-    'or',
-  )
   public async update(
     @Param() param: SearchQuestionParams,
-    @Body() body: Partial<CreateQuestionDto>,
+    @Body() body: Partial<QuestionDto>,
   ): Promise<Question> {
     try {
       return await this.questionService.updateQuestion(param, body, {

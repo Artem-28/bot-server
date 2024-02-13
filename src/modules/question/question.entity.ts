@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 // Module
 
 // Controller
@@ -8,12 +15,13 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 // Entity
 import { BaseEntity } from '@/base/entities/base.entity';
 import { Script } from '@/modules/script/script.entity';
+import { Answer } from '@/modules/answer/answer.entity';
 
 // Guard
 
 // Types
 import { QuestionTypeEnum } from '@/base/enum/dropdown-option/question-type.enum';
-import { getUpdateDto } from '@/modules/question/dto/update-question.dto';
+import { getUpdateDto } from '@/modules/question/dto/question.dto';
 
 // Helper
 
@@ -36,6 +44,9 @@ export class Question extends BaseEntity {
   })
   @JoinColumn({ name: 'script_id' })
   script: Script;
+
+  @OneToMany(() => Answer, (answer) => answer.question)
+  public answers: Answer[];
 
   constructor(partial: Partial<Question>) {
     super();

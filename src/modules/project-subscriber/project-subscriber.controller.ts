@@ -22,7 +22,6 @@ import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
 import { Permission } from '@/modules/check-permission/decorators/permission.decorator';
 
 // Types
-import { PermissionEnum } from '@/base/enum/permission/permission.enum';
 import { SubscribeProjectDto } from '@/modules/project-subscriber/dto/subscribe-project.dto';
 import { IResponseCombineUserSubscriber } from '@/modules/project-subscriber/interfaces/response-project-subscriber.interface';
 import { SearchProjectSubscriberDto } from '@/modules/project-subscriber/dto/search-project-subscriber.dto';
@@ -38,7 +37,6 @@ export class ProjectSubscriberController {
   // Добавление нового подписчика в проект
   @Post('/subscribe')
   @UseGuards(PermissionGuard)
-  @Permission(PermissionEnum.PROJECT_SUBSCRIBE)
   public async subscribe(
     @Req() req,
     @Body() body: SubscribeProjectDto,
@@ -55,7 +53,6 @@ export class ProjectSubscriberController {
 
   // Отписать пользователя или отписаться самому
   @Post('/unsubscribe')
-  @Permission(PermissionEnum.PROJECT_UNSUBSCRIBE)
   public async unsubscribe(
     @Req() req,
     @Body() body: SearchProjectSubscriberDto,
@@ -85,7 +82,6 @@ export class ProjectSubscriberController {
 
   // Получчение подписчиков для проекта
   @Get('/project/:projectId')
-  @Permission(PermissionEnum.PROJECT_SUBSCRIBERS_VIEW)
   public async getByProject(@Req() req, @Param() param): Promise<User[]> {
     try {
       return await this.projectSubscriberService.getSubscribeUsers({

@@ -17,7 +17,7 @@ import { DropdownOption } from '@/modules/dropdown-option/dropdown-option.entity
 import { Options } from '@/base/interfaces/service.interface';
 
 // Helper
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 
 @Injectable()
 export class DropdownOptionService {

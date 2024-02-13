@@ -13,11 +13,11 @@ import { User } from '@/modules/user/user.entity';
 // Guard
 
 // Types
-import { CreateUserDto } from '@/modules/user/dto/create-user.dto';
+import { UserDto } from '@/modules/user/dto/user.dto';
 import { Options } from '@/base/interfaces/service.interface';
 
 // Helper
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,7 @@ export class UserService {
     private readonly _usersRepository: Repository<User>,
   ) {}
   // Создание нового пользователя
-  public async create(payload: CreateUserDto): Promise<User> {
+  public async create(payload: UserDto): Promise<User> {
     const data = await this._usersRepository.save(payload);
     return new User(data);
   }
@@ -44,5 +44,25 @@ export class UserService {
     }
     if (!response) return null;
     return new User(response);
+  }
+
+  public async checkSubscriptionToProject(
+    userId: number,
+    projectId: number,
+    options?: Options,
+  ): Promise<boolean> {
+    const throwException = options && options.throwException;
+    const queryHelper = new QueryBuilderHelper(this._usersRepository, {
+      filter: [
+        { field: 'id', value: userId },
+        { field: 'subscribedProjects.projectId', value: projectId },
+      ],
+      relation: [{ name: 'subscribedProjects', select: 'projectId' }],
+    });
+    const count = await queryHelper.builder.getCount();
+    if (throwException && !count) {
+      throw new HttpException('user.check_subscription_to_project', 500);
+    }
+    return !!count;
   }
 }

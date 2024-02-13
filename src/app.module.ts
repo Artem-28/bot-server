@@ -23,6 +23,8 @@ import { ProjectSubscriberModule } from '@/modules/project-subscriber/project-su
 import { CheckPermissionModule } from '@/modules/check-permission/check-permission.module';
 import { DropdownOptionModule } from './modules/dropdown-option/dropdown-option.module';
 import { QuestionModule } from './modules/question/question.module';
+import { AnswerModule } from './modules/answer/answer.module';
+import { PermissionModule } from './modules/permission/permission.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { QuestionModule } from './modules/question/question.module';
     CheckPermissionModule,
     DropdownOptionModule,
     QuestionModule,
+    AnswerModule,
+    PermissionModule,
   ],
   controllers: [],
   providers: [

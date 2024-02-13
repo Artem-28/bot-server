@@ -15,7 +15,7 @@ import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
 import { SearchScriptParams } from '@/modules/script/util/search-script.params';
 
 // Helper
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 import { validateUpdateDto } from '@/modules/script/util/validate-dto';
 
 @Injectable()

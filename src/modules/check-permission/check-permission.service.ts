@@ -1,17 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 
 // Entity
 import { User } from '@/modules/user/user.entity';
 
 // Types
-import { CheckPermissionDto } from '@/modules/check-permission/dto/check-permission.dto';
-import { PermissionEnum } from '@/base/enum/permission/permission.enum';
-import { HttpParams } from '@/base/interfaces/http.interface';
+import {
+  PermissionAdminEnum,
+  PermissionUserEnum,
+} from '@/base/enum/permission/permission.enum';
 
 // Helpers
-import QueryBuilderHelper from '@/base/helpers/query-builder-helper';
+import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
+import {
+  AccessController,
+  AccessControllerEnum,
+} from '@/modules/check-permission/access-controllers/access-controller.type';
+import { QueryFilter } from '@/base/interfaces/service.interface';
 
 @Injectable()
 export class CheckPermissionService {
@@ -20,98 +26,99 @@ export class CheckPermissionService {
     private readonly _userRepository: Repository<User>,
   ) {}
 
-  private _checkProjectAccess(user: User, projectId: number): boolean {
-    return user.projectIds.includes(projectId);
+  // Проверка является ли пользователь владельцем проекта
+  private _checkProjectOwner(user: User, params: any): boolean {
+    return user.projectIds.includes(params.projectId);
   }
 
-  private _checkProjectView(user: User, projectId: number): boolean {
-    return (
-      user.subscribedProjectIds.includes(projectId) ||
-      user.projectIds.includes(projectId)
+  // Проверка является ли пользователь подписчиком проекта
+  private _checkProjectSubscriber(user: User, params: any): boolean {
+    return user.subscribedProjectIds.includes(params.projectId);
+  }
+
+  // Доступ к управлению правами пользователя
+  private _checkAccessPermissionUser(
+    user: User,
+    permission: PermissionUserEnum,
+    params: any,
+  ): boolean {
+    if (user.id === params.userId) return false;
+    const subscribedProject = user.subscribedProjects.find(
+      (p) => p.projectId === params.projectId,
     );
+    if (!subscribedProject) return false;
+    const userOwner = subscribedProject.userId !== params.userId;
+    if (userOwner) return false;
+    return this._checkPermissionUser(user, permission);
   }
 
-  private _checkProjectUnsubscribe(user, params: HttpParams): boolean {
-    // авторизованый пользователь является владельцем проекта
-    const isOwner = user.projectIds.includes(params.projectId);
-    // или хочет отписаться сам
-    return isOwner || user.id === params.userId;
+  // Доступ к просмотру прав пользователя
+  private _checkViewPermissionUser(
+    user: User,
+    permission: PermissionUserEnum,
+    params: any,
+  ): boolean {
+    const subscribedProject = user.subscribedProjects.find(
+      (p) => p.projectId === params.projectId,
+    );
+    if (!subscribedProject) return false;
+    return this._checkPermissionUser(user, permission);
+  }
+
+  // Проверяет наличие права у пользователя
+  private _checkPermissionUser(
+    user: User,
+    permission: PermissionUserEnum,
+  ): boolean {
+    const permissions = user.permissions || [];
+    return permissions.some((p) => p.code === permission);
   }
 
   private _checkPermission(
     user: User,
-    permission: PermissionEnum,
-    params: HttpParams,
+    permission: AccessControllerEnum,
+    params: any,
   ) {
     switch (permission) {
-      case PermissionEnum.PROJECT_ACCESS:
-      case PermissionEnum.PROJECT_DELETE:
-      case PermissionEnum.PROJECT_CREATE:
-      case PermissionEnum.PROJECT_UPDATE:
-      case PermissionEnum.PROJECT_SUBSCRIBE:
-      case PermissionEnum.PROJECT_SUBSCRIBERS_VIEW:
-        return this._checkProjectAccess(user, params.projectId);
-      case PermissionEnum.PROJECT_VIEW:
-      case PermissionEnum.SCRIPT_ACCESS:
-      case PermissionEnum.SCRIPT_DELETE:
-      case PermissionEnum.SCRIPT_CREATE:
-      case PermissionEnum.SCRIPT_UPDATE:
-      case PermissionEnum.SCRIPT_VIEW:
-      case PermissionEnum.QUESTION_ACCESS:
-      case PermissionEnum.QUESTION_CREATE:
-      case PermissionEnum.QUESTION_DELETE:
-      case PermissionEnum.QUESTION_UPDATE:
-      case PermissionEnum.QUESTION_VIEW:
-        return this._checkProjectView(user, params.projectId);
-      case PermissionEnum.PROJECT_UNSUBSCRIBE:
-        return this._checkProjectUnsubscribe(user, params);
+      case PermissionAdminEnum.PROJECT_OWNER:
+        return this._checkProjectOwner(user, params);
+      case PermissionAdminEnum.PROJECT_SUBSCRIBER:
+        return this._checkProjectSubscriber(user, params);
+      case PermissionUserEnum.PERMISSION_USER_ACCESS:
+      case PermissionUserEnum.PERMISSION_USER_UPDATE:
+        return this._checkAccessPermissionUser(user, permission, params);
+      case PermissionUserEnum.PERMISSION_USER_VIEW:
+        return this._checkViewPermissionUser(user, permission, params);
+      case PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE:
+        return this._checkPermissionUser(user, permission);
       default:
         return false;
     }
   }
 
-  private async _loadRelations(user: User, permissions: PermissionEnum[]) {
-    const queryHelper = new QueryBuilderHelper(this._userRepository, {
-      filter: { field: 'id', value: user.id },
-      relation: { name: 'subscribedProjects' },
+  private _filterRelationPermissions(filter: QueryFilter) {
+    return new Brackets((qb) => {
+      qb.where(filter.field, filter.value).orWhere('permissions.id IS NULL');
     });
-    permissions.forEach((permission) => {
-      switch (permission) {
-        case PermissionEnum.PROJECT_ACCESS:
-        case PermissionEnum.PROJECT_DELETE:
-        case PermissionEnum.PROJECT_CREATE:
-        case PermissionEnum.PROJECT_UPDATE:
-        case PermissionEnum.PROJECT_SUBSCRIBE:
-        case PermissionEnum.PROJECT_UNSUBSCRIBE:
-        case PermissionEnum.PROJECT_SUBSCRIBERS_VIEW:
-          queryHelper.relation({ name: 'projects', select: 'id' });
-          break;
-        case PermissionEnum.PROJECT_VIEW:
-        case PermissionEnum.SCRIPT_ACCESS:
-        case PermissionEnum.SCRIPT_DELETE:
-        case PermissionEnum.SCRIPT_CREATE:
-        case PermissionEnum.SCRIPT_UPDATE:
-        case PermissionEnum.SCRIPT_VIEW:
-        case PermissionEnum.QUESTION_ACCESS:
-        case PermissionEnum.QUESTION_CREATE:
-        case PermissionEnum.QUESTION_DELETE:
-        case PermissionEnum.QUESTION_UPDATE:
-        case PermissionEnum.QUESTION_VIEW:
-          queryHelper.relation([
-            { name: 'projects', select: 'id' },
-            { name: 'subscribedProjects', select: 'projectId' },
-          ]);
-      }
+  }
+
+  private _filterSubscribedProjects(filter: QueryFilter) {
+    return new Brackets((qb) => {
+      qb.where(filter.field, filter.value).orWhere(
+        'subscribedProjects.id IS NULL',
+      );
     });
-    return queryHelper.builder.getOne();
   }
 
   public async check(
     user: User,
-    permissionsDto: CheckPermissionDto,
+    accessController: AccessController,
+    params: any,
   ): Promise<boolean> {
-    const { permissions, operator, params } = permissionsDto;
-    user = await this._loadRelations(user, permissions);
+    const { permissions, operator } = accessController;
+    user = await this._loadRelations(user, permissions, params);
+    console.log('USER <<<<<<<<<<<<<<<<', user);
+    if (!user) return false;
     switch (operator) {
       case 'and':
         return permissions.every((permission) =>
@@ -122,5 +129,72 @@ export class CheckPermissionService {
           this._checkPermission(user, permission, params),
         );
     }
+  }
+
+  private async _loadRelations(
+    user: User,
+    permissions: AccessControllerEnum[],
+    params: any,
+  ) {
+    // const res = await this._userRepository
+    //   .createQueryBuilder('user')
+    //   .leftJoinAndSelect(
+    //     'user.permissions',
+    //     'permissions',
+    //     'permissions.projectId = :projectId',
+    //   )
+    //   .where('user.id = :id', { id: user.id })
+    //   .andWhere(
+    //     new Brackets((qb) => {
+    //       qb.where('permissions.projectId = :projectId', {
+    //         projectId: params.projectId,
+    //       }).orWhere('permissions.id IS NULL');
+    //     }),
+    //   )
+    //   .getOne();
+    // return res;
+    const queryHelper = new QueryBuilderHelper(this._userRepository, {
+      filter: { field: 'id', value: user.id },
+    });
+    permissions.forEach((permission) => {
+      switch (permission) {
+        case PermissionAdminEnum.PROJECT_OWNER:
+          queryHelper.relation({ name: 'projects', select: 'id' });
+          break;
+        case PermissionAdminEnum.PROJECT_SUBSCRIBER:
+          queryHelper.relation({
+            name: 'subscribedProjects',
+            select: 'projectId',
+          });
+          break;
+        case PermissionUserEnum.PERMISSION_USER_ACCESS:
+        case PermissionUserEnum.PERMISSION_USER_UPDATE:
+        case PermissionUserEnum.PERMISSION_USER_VIEW:
+        case PermissionUserEnum.SCRIPT_ACCESS:
+        case PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE:
+        case PermissionUserEnum.SCRIPT_DELETE:
+        case PermissionUserEnum.SCRIPT_VIEW:
+          queryHelper.filter([
+            {
+              field: 'permissions.projectId',
+              value: params.projectId,
+              callback: this._filterRelationPermissions,
+            },
+            {
+              field: 'subscribedProjects.projectId',
+              value: params.projectId,
+              callback: this._filterSubscribedProjects,
+            },
+          ]);
+          queryHelper.relation([
+            { name: 'permissions', methods: 'leftJoinAndSelect' },
+            { name: 'subscribedProjects', methods: 'leftJoinAndSelect' },
+          ]);
+          break;
+        default:
+          break;
+      }
+    });
+    return await queryHelper.builder.getOne();
   }
 }

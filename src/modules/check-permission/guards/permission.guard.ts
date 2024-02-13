@@ -1,7 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-
-import { HttpParams } from '@/base/interfaces/http.interface';
 import { CheckPermissionService } from '@/modules/check-permission/check-permission.service';
 
 @Injectable()
@@ -11,30 +9,27 @@ export class PermissionGuard implements CanActivate {
     private readonly _checkPermissionService: CheckPermissionService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const { permissions, operator } = this._reflector.get(
+    const accessController = this._reflector.get(
       'permissions',
       context.getHandler(),
     );
 
     const request = context.switchToHttp().getRequest();
-    const params = this._getParams(request);
-    const permissionsDto = { permissions, operator, params };
     const user = request.user;
-    return await this._checkPermissionService.check(user, permissionsDto);
+    const params = this._getParams(request);
+    return await this._checkPermissionService.check(
+      user,
+      accessController,
+      params,
+    );
   }
 
   private _getParams(request: any) {
-    const params = request.params;
-    const body = request.body;
-    const httpParams = {} as HttpParams;
-    const projectId = params.projectId || body.projectId;
-    const userId = params.userId || body.userId;
-    if (projectId) {
-      httpParams.projectId = Number(projectId);
-    }
-    if (userId) {
-      httpParams.userId = Number(userId);
-    }
-    return httpParams;
+    const params = request.params || {};
+    return Object.entries(params).reduce((acc, current) => {
+      const [key, value] = current;
+      acc[key] = Number(value);
+      return acc;
+    }, {});
   }
 }

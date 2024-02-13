@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 // Module
 
@@ -10,6 +10,8 @@ import { Exclude } from 'class-transformer';
 import { BaseEntity } from '@/base/entities/base.entity';
 import { Project } from '@/modules/project/project.entity';
 import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
+import { PermissionUser } from '@/modules/permission/permission-user.entity';
+import { getUpdateDto } from '@/modules/user/dto/user.dto';
 
 // Guard
 
@@ -49,14 +51,22 @@ export class User extends BaseEntity {
     (projectSubscriber) => projectSubscriber.user,
   )
   public subscribedProjects: ProjectSubscriber[];
-  public subscriptionAt: Date | null = null;
 
-  // @ManyToMany(() => Project, (project) => project.subscribers)
-  // subscribedProjects: Project[];
+  @OneToMany(() => PermissionUser, (permissionUser) => permissionUser.user, {
+    cascade: true,
+  })
+  public permissions: PermissionUser[];
+
+  public subscriptionAt: Date | null = null;
 
   constructor(partial: Partial<User>) {
     super();
     Object.assign(this, partial);
+  }
+
+  public update(partial: Partial<User>) {
+    const dto = getUpdateDto(partial);
+    Object.assign(this, dto);
   }
 
   public get projectIds(): number[] {

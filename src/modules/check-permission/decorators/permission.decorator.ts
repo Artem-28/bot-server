@@ -1,15 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
+import { AccessController } from '@/modules/check-permission/access-controllers/access-controller.type';
 
-import { PermissionEnum } from '@/base/enum/permission/permission.enum';
-import { TPermissionOperator } from '@/modules/check-permission/dto/check-permission.dto';
-
-export const Permission = (
-  permissions: PermissionEnum[] | PermissionEnum,
-  operator: TPermissionOperator = 'and',
-) => {
-  const meta = {
-    permissions: Array.isArray(permissions) ? permissions : [permissions],
-    operator,
-  };
-  return SetMetadata('permissions', meta);
-};
+export function Permission(accessController: AccessController) {
+  return SetMetadata('permissions', accessController);
+}
