@@ -75,3 +75,40 @@ export const SCRIPT_VIEW: AccessController = {
   ],
   operator: 'or',
 };
+
+/* ------------- Question controller ------------------ */
+export const QUESTION_CREATE: AccessController = {
+  permissions: [
+    PermissionAdminEnum.PROJECT_OWNER,
+    PermissionUserEnum.SCRIPT_ACCESS,
+    PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE,
+  ],
+  operator: 'or',
+};
+
+export const QUESTION_UPDATE: AccessController = {
+  permissions: [
+    PermissionAdminEnum.PROJECT_OWNER,
+    PermissionUserEnum.SCRIPT_ACCESS,
+    PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE,
+  ],
+  operator: 'or',
+};
+
+export const QUESTION_DELETE: AccessController = {
+  permissions: [
+    PermissionAdminEnum.PROJECT_OWNER,
+    PermissionUserEnum.SCRIPT_ACCESS,
+    PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE,
+  ],
+  operator: 'or',
+};
+
+export const QUESTION_VIEW: AccessController = {
+  permissions: [
+    PermissionAdminEnum.PROJECT_OWNER,
+    PermissionUserEnum.SCRIPT_ACCESS,
+    PermissionUserEnum.SCRIPT_VIEW,
+  ],
+  operator: 'or',
+};

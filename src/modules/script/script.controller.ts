@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -23,11 +22,15 @@ import { Script } from '@/modules/script/script.entity';
 import { PermissionGuard } from '@/modules/check-permission/guards/permission.guard';
 import { AuthJwtGuard } from '@/modules/auth/passport/guards/auth-jwt.guard';
 import { Permission } from '@/modules/check-permission/decorators/permission.decorator';
+import {
+  SCRIPT_CREATE,
+  SCRIPT_DELETE,
+  SCRIPT_UPDATE,
+  SCRIPT_VIEW,
+} from '@/modules/check-permission/access-controllers/permission-controller.access';
 
 // Types
 import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
-import { SearchScriptParams } from '@/modules/script/util/search-script.params';
-import { SCRIPT_CREATE } from '@/modules/check-permission/access-controllers/permission-controller.access';
 
 // Helper
 
@@ -55,7 +58,8 @@ export class ScriptController {
   // Получение списка скриптов в проекте
   @Get()
   @UseGuards(PermissionGuard)
-  public async getScripts(@Param() param) {
+  @Permission(SCRIPT_VIEW)
+  public async getScripts(@Param() param): Promise<Script[]> {
     try {
       return await this.scriptService.getScripts({
         filter: { field: 'project_id', value: param.projectId },
@@ -68,7 +72,8 @@ export class ScriptController {
   // Получение инфомации по скрипту
   @Get(':scriptId')
   @UseGuards(PermissionGuard)
-  public async info(@Req() req, @Param() param: SearchScriptParams) {
+  @Permission(SCRIPT_VIEW)
+  public async info(@Param() param): Promise<Script> {
     try {
       return await this.scriptService.getOneScript({
         filter: [
@@ -86,9 +91,9 @@ export class ScriptController {
   // Обновление скрипта
   @Patch(':scriptId')
   @UseGuards(PermissionGuard)
+  @Permission(SCRIPT_UPDATE)
   public async update(
-    @Req() req,
-    @Param() param: SearchScriptParams,
+    @Param() param,
     @Body() body: Partial<CreateScriptDto>,
   ): Promise<Script> {
     try {
@@ -107,10 +112,8 @@ export class ScriptController {
   // Удаление скрипта
   @Delete(':scriptId')
   @UseGuards(PermissionGuard)
-  public async remove(
-    @Req() req,
-    @Param() param: SearchScriptParams,
-  ): Promise<boolean> {
+  @Permission(SCRIPT_DELETE)
+  public async remove(@Param() param): Promise<boolean> {
     try {
       return await this.scriptService.removeScript(param, {
         throwException: true,

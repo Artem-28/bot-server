@@ -4,17 +4,18 @@ import { DataSource, Repository } from 'typeorm';
 // Module
 // Controller
 // Service
+import { CheckEntityService } from '@/modules/check-entity/check-entity.service';
 // Entity
 import { Permission } from '@/modules/permission/permission.entity';
+import { PermissionUser } from '@/modules/permission/permission-user.entity';
 
 // Guard
+
 // Types
+import { PermissionUserDto } from '@/modules/permission/dto/permission-user.dto';
+import { Options } from '@/base/interfaces/service.interface';
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
-import { PermissionUserDto } from '@/modules/permission/dto/permission-user.dto';
-import { UserService } from '@/modules/user/user.service';
-import { Options } from '@/base/interfaces/service.interface';
-import { PermissionUser } from '@/modules/permission/permission-user.entity';
 import { compareArrays } from '@/base/helpers/array.helper';
 
 @Injectable()
@@ -25,7 +26,7 @@ export class PermissionService {
     private readonly _permissionRepository: Repository<Permission>,
     @InjectRepository(PermissionUser)
     private readonly _permissionUserRepository: Repository<PermissionUser>,
-    private readonly _userService: UserService,
+    private readonly _checkEntityService: CheckEntityService,
   ) {}
 
   public async getPermissionGroups(): Promise<Permission[]> {
@@ -47,17 +48,15 @@ export class PermissionService {
 
   public async updatePermissionUser(
     dto: PermissionUserDto,
-    options?: Options,
+    options: Options,
   ): Promise<boolean> {
     const throwException = options && options.throwException;
     // Проверка подписан ли пользователь на проект
-    const checkUser = await this._userService.checkSubscriptionToProject(
-      dto.userId,
-      dto.projectId,
-    );
-    if (throwException && !checkUser) {
-      throw new HttpException('permission.update', 500);
-    }
+    const checkUser =
+      await this._checkEntityService.checkUserSubscriptionToProject(
+        options.param,
+        throwException,
+      );
     if (!checkUser) return false;
 
     // Получаем текущие permissions у пользователя

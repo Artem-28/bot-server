@@ -9,6 +9,7 @@ import { DataSource, Repository } from 'typeorm';
 
 // Entity
 import { Question } from '@/modules/question/question.entity';
+import { CheckEntityService } from '@/modules/check-entity/check-entity.service';
 
 // Guard
 
@@ -26,13 +27,25 @@ export class QuestionService {
     private readonly _dataSource: DataSource,
     @InjectRepository(Question)
     private readonly _questionRepository: Repository<Question>,
+    private readonly _checkEntityService: CheckEntityService,
   ) {}
   // Создание
   public async createQuestion(
     dto: QuestionDto,
-    options?: Options,
+    options: Options,
   ): Promise<Question> {
     const throwException = options && options.throwException;
+
+    // Проверка принадлежит ли скрипт к проекту
+    const checkScript =
+      await this._checkEntityService.checkScriptBelongsToProject(
+        options.param,
+        throwException,
+      );
+    console.log('CHECK SCRIPT', checkScript);
+    console.log('CHECK PARAM', options.param);
+    if (!checkScript) return null;
+
     let question = new Question(dto);
     let startQuestion: Question | null = null;
 

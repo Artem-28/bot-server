@@ -89,7 +89,10 @@ export class CheckPermissionService {
         return this._checkAccessPermissionUser(user, permission, params);
       case PermissionUserEnum.PERMISSION_USER_VIEW:
         return this._checkViewPermissionUser(user, permission, params);
+      case PermissionUserEnum.SCRIPT_ACCESS:
       case PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE:
+      case PermissionUserEnum.SCRIPT_VIEW:
+      case PermissionUserEnum.SCRIPT_DELETE:
         return this._checkPermissionUser(user, permission);
       default:
         return false;
@@ -170,10 +173,6 @@ export class CheckPermissionService {
         case PermissionUserEnum.PERMISSION_USER_ACCESS:
         case PermissionUserEnum.PERMISSION_USER_UPDATE:
         case PermissionUserEnum.PERMISSION_USER_VIEW:
-        case PermissionUserEnum.SCRIPT_ACCESS:
-        case PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE:
-        case PermissionUserEnum.SCRIPT_DELETE:
-        case PermissionUserEnum.SCRIPT_VIEW:
           queryHelper.filter([
             {
               field: 'permissions.projectId',
@@ -190,6 +189,20 @@ export class CheckPermissionService {
             { name: 'permissions', methods: 'leftJoinAndSelect' },
             { name: 'subscribedProjects', methods: 'leftJoinAndSelect' },
           ]);
+          break;
+        case PermissionUserEnum.SCRIPT_ACCESS:
+        case PermissionUserEnum.SCRIPT_CREATE_OR_UPDATE:
+        case PermissionUserEnum.SCRIPT_VIEW:
+        case PermissionUserEnum.SCRIPT_DELETE:
+          queryHelper.filter({
+            field: 'permissions.projectId',
+            value: params.projectId,
+            callback: this._filterRelationPermissions,
+          });
+          queryHelper.relation({
+            name: 'permissions',
+            methods: 'leftJoinAndSelect',
+          });
           break;
         default:
           break;

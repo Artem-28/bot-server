@@ -17,6 +17,7 @@ import { SearchScriptParams } from '@/modules/script/util/search-script.params';
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 import { validateUpdateDto } from '@/modules/script/util/validate-dto';
+import { checkRequiredField } from '@/base/helpers/object.helper';
 
 @Injectable()
 export class ScriptService {

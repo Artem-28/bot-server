@@ -25,6 +25,7 @@ import { DropdownOptionModule } from './modules/dropdown-option/dropdown-option.
 import { QuestionModule } from './modules/question/question.module';
 import { AnswerModule } from './modules/answer/answer.module';
 import { PermissionModule } from './modules/permission/permission.module';
+import { CheckEntityModule } from './modules/check-entity/check-entity.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PermissionModule } from './modules/permission/permission.module';
     QuestionModule,
     AnswerModule,
     PermissionModule,
+    CheckEntityModule,
   ],
   controllers: [],
   providers: [

@@ -27,6 +27,8 @@ import { Permission } from '@/modules/check-permission/decorators/permission.dec
 import { QuestionDto } from '@/modules/question/dto/question.dto';
 import { SearchScriptParams } from '@/modules/script/util/search-script.params';
 import { SearchQuestionParams } from '@/modules/question/util/search-question.params';
+import { QUESTION_CREATE } from '@/modules/check-permission/access-controllers/permission-controller.access';
+import {formatParamHttp} from "@/base/helpers/formatter.helper";
 
 // Helper
 
@@ -37,14 +39,17 @@ export class QuestionController {
   // Создание нового question
   @Post()
   @UseGuards(PermissionGuard)
+  @Permission(QUESTION_CREATE)
   public async create(
-    @Param() param: SearchScriptParams,
+    @Param() param,
     @Body() body: QuestionDto,
   ): Promise<Question> {
     try {
-      body.scriptId = +param.scriptId;
+      param = formatParamHttp(param);
+      body.scriptId = param.scriptId;
       return await this.questionService.createQuestion(body, {
         throwException: true,
+        param,
       });
     } catch (e) {
       throw new HttpException(e.response, e.status);

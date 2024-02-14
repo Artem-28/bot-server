@@ -1,4 +1,5 @@
 import { Brackets } from 'typeorm';
+import { BaseHttpParam } from '@/base/interfaces/base.interface';
 
 export interface QueryFilter {
   field: string;
@@ -18,6 +19,7 @@ export interface Options {
   throwException?: boolean;
   filter?: QueryFilter | QueryFilter[];
   relation?: QueryRelation | QueryRelation[];
+  param?: BaseHttpParam;
 }
 
 export interface QuerySelect {
