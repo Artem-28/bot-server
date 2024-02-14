@@ -16,10 +16,10 @@ import { CheckEntityService } from '@/modules/check-entity/check-entity.service'
 // Types
 import { QuestionDto } from '@/modules/question/dto/question.dto';
 import { Options } from '@/base/interfaces/service.interface';
-import { SearchQuestionParams } from '@/modules/question/util/search-question.params';
 
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
+import { checkRequiredField } from '@/base/helpers/object.helper';
 
 @Injectable()
 export class QuestionService {
@@ -34,16 +34,14 @@ export class QuestionService {
     dto: QuestionDto,
     options: Options,
   ): Promise<Question> {
-    const throwException = options && options.throwException;
+    const { throwException, param } = options;
 
     // Проверка принадлежит ли скрипт к проекту
     const checkScript =
       await this._checkEntityService.checkScriptBelongsToProject(
-        options.param,
+        param,
         throwException,
       );
-    console.log('CHECK SCRIPT', checkScript);
-    console.log('CHECK PARAM', options.param);
     if (!checkScript) return null;
 
     let question = new Question(dto);
@@ -85,25 +83,30 @@ export class QuestionService {
   }
 
   public async updateQuestion(
-    searchParams: SearchQuestionParams,
     data: Partial<QuestionDto>,
-    options?: Options,
+    options: Options,
   ): Promise<Question> {
-    const { questionId, scriptId, projectId } = searchParams;
-    const throwException = options && options.throwException;
+    const { throwException, param } = options;
+
+    const validParam = checkRequiredField(
+      param,
+      ['projectId', 'scriptId', 'questionId'],
+      throwException,
+    );
+    if (!validParam) return null;
+
+    const { questionId, scriptId, projectId } = param;
     let startQuestion: Question | null = null;
     const question = await this.getOneQuestion({
       filter: [
         { field: 'id', value: questionId },
         { field: 'scriptId', value: scriptId },
+        { field: 'script.projectId', value: projectId },
       ],
       relation: { name: 'script', select: 'projectId' },
+      throwException,
     });
-    const valid = question && question.script.projectId === +projectId;
-    if (!valid && throwException) {
-      throw new HttpException('question.update', 500);
-    }
-    if (!valid) return null;
+    if (!question) return null;
 
     const queryRunner = this._dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -154,43 +157,23 @@ export class QuestionService {
     return response;
   }
 
-  // Проверяет существует ли question по id, scriptId и projectId
-  public async isExistQuestion(
-    searchParams: SearchQuestionParams,
-    options?: Options,
-  ): Promise<boolean> {
-    const throwException = options && options.throwException;
-    const { questionId, scriptId, projectId } = searchParams;
-    const question = await this.getOneQuestion({
-      filter: [
-        { field: 'id', value: questionId },
-        { field: 'scriptId', value: scriptId },
-      ],
-      relation: { name: 'script', select: 'projectId' },
-    });
-    const valid = question && question.script.projectId === +projectId;
-    if (!valid && throwException) {
-      throw new HttpException('question.does_not_exist', 404);
-    }
-    return valid;
-  }
-
   // Удаление
-  public async removeQuestion(
-    searchParams: SearchQuestionParams,
-    options?: Options,
-  ): Promise<boolean> {
-    const throwException = options && options.throwException;
-    // Проверяем на существование записи
-    const exist = await this.isExistQuestion(searchParams, { throwException });
+  public async removeQuestion(options: Options): Promise<boolean> {
+    const { throwException, param } = options;
+    const { questionId: id, scriptId } = param;
+    const exist = await this._checkEntityService.checkAccessQuestion(
+      param,
+      throwException,
+    );
     if (!exist) return false;
+
     // Если запись существует то удаляем
-    const id = searchParams.questionId;
     const response = await this._questionRepository
       .createQueryBuilder()
       .delete()
       .from(Question)
       .where({ id })
+      .andWhere({ scriptId })
       .execute();
 
     const success = !!response.affected;

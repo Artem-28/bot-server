@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 // Entity
 import { Script } from '@/modules/script/script.entity';
 import { User } from '@/modules/user/user.entity';
+import { Question } from '@/modules/question/question.entity';
 
 // Guard
 
@@ -23,10 +24,12 @@ import { checkRequiredField } from '@/base/helpers/object.helper';
 @Injectable()
 export class CheckEntityService {
   constructor(
-    @InjectRepository(Script)
-    private readonly _scriptsRepository: Repository<Script>,
     @InjectRepository(User)
     private readonly _usersRepository: Repository<User>,
+    @InjectRepository(Script)
+    private readonly _scriptsRepository: Repository<Script>,
+    @InjectRepository(Question)
+    private readonly _questionRepository: Repository<Question>,
   ) {}
 
   // Проверяет принадлежит ли скрипт к проекту
@@ -35,19 +38,18 @@ export class CheckEntityService {
     throwException?: boolean,
   ): Promise<boolean> {
     // Валидация входящих параметров
-    const isValidParam = checkRequiredField(param, ['projectId', 'scriptId']);
-    if (!isValidParam && throwException) {
-      throw new HttpException(
-        'script.check_belongs_to_project.invalid_param',
-        500,
-      );
-    }
-    if (!isValidParam) return false;
+    const validParam = checkRequiredField(
+      param,
+      ['projectId', 'scriptId'],
+      throwException,
+    );
+    if (!validParam) return false;
 
+    const { projectId, scriptId } = param;
     const queryHelper = new QueryBuilderHelper(this._scriptsRepository, {
       filter: [
-        { field: 'id', value: param.scriptId },
-        { field: 'projectId', value: param.projectId },
+        { field: 'id', value: scriptId },
+        { field: 'projectId', value: projectId },
       ],
     });
 
@@ -67,19 +69,18 @@ export class CheckEntityService {
     throwException?: boolean,
   ): Promise<boolean> {
     // Валидация входящих параметров
-    const isValidParam = checkRequiredField(param, ['userId', 'projectId']);
-    if (!isValidParam && throwException) {
-      throw new HttpException(
-        'user.check_subscription_to_project.invalid_param',
-        500,
-      );
-    }
-    if (!isValidParam) return false;
+    const validParam = checkRequiredField(
+      param,
+      ['userId', 'projectId'],
+      throwException,
+    );
+    if (!validParam) return false;
 
+    const { userId, projectId } = param;
     const queryHelper = new QueryBuilderHelper(this._usersRepository, {
       filter: [
-        { field: 'id', value: param.userId },
-        { field: 'subscribedProjects.projectId', value: param.projectId },
+        { field: 'id', value: userId },
+        { field: 'subscribedProjects.projectId', value: projectId },
       ],
       relation: [{ name: 'subscribedProjects', select: 'projectId' }],
     });
@@ -90,6 +91,34 @@ export class CheckEntityService {
         'user.check_subscription_to_project.not_found',
         500,
       );
+    }
+    return exists;
+  }
+
+  public async checkAccessQuestion(
+    param: BaseHttpParam,
+    throwException?: boolean,
+  ): Promise<boolean> {
+    const validParam = checkRequiredField(
+      param,
+      ['projectId', 'scriptId', 'questionId'],
+      throwException,
+    );
+    if (!validParam) return false;
+
+    const { questionId, scriptId, projectId } = param;
+    const queryHelper = new QueryBuilderHelper(this._questionRepository, {
+      filter: [
+        { field: 'id', value: questionId },
+        { field: 'scriptId', value: scriptId },
+        { field: 'script.projectId', value: projectId },
+      ],
+      relation: { name: 'script' },
+    });
+
+    const exists = await queryHelper.builder.getExists();
+    if (throwException && !exists) {
+      throw new HttpException('question.check.not_found', 500);
     }
     return exists;
   }

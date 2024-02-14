@@ -12,12 +12,10 @@ import { Script } from '@/modules/script/script.entity';
 // Types
 import { Options } from '@/base/interfaces/service.interface';
 import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
-import { SearchScriptParams } from '@/modules/script/util/search-script.params';
 
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 import { validateUpdateDto } from '@/modules/script/util/validate-dto';
-import { checkRequiredField } from '@/base/helpers/object.helper';
 
 @Injectable()
 export class ScriptService {
@@ -28,11 +26,9 @@ export class ScriptService {
 
   // Удаление скрипта по id
   public async removeScript(
-    searchParams: SearchScriptParams,
-    options?: Options,
+    options: Options,
   ): Promise<boolean> {
-    const id = searchParams.scriptId;
-    const projectId = searchParams.projectId;
+    const { scriptId: id, projectId } = options.param;
     const response = await this._scriptRepository
       .createQueryBuilder()
       .delete()
@@ -63,13 +59,11 @@ export class ScriptService {
 
   // Обновление скрипта
   public async updateScript(
-    searchParams: SearchScriptParams,
     data: Partial<CreateScriptDto>,
-    options?: Options,
+    options: Options,
   ): Promise<boolean> {
     const dto = validateUpdateDto(data);
-    const id = searchParams.scriptId;
-    const projectId = searchParams.projectId;
+    const { scriptId: id, projectId } = options.param;
     const response = await this._scriptRepository
       .createQueryBuilder()
       .update()

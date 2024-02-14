@@ -10,6 +10,7 @@ import { CheckEntityService } from './check-entity.service';
 // Entity
 import { User } from '@/modules/user/user.entity';
 import { Script } from '@/modules/script/script.entity';
+import { Question } from '@/modules/question/question.entity';
 
 // Guard
 
@@ -19,7 +20,7 @@ import { Script } from '@/modules/script/script.entity';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Script])],
+  imports: [TypeOrmModule.forFeature([User, Script, Question])],
   providers: [CheckEntityService],
   exports: [CheckEntityService],
 })

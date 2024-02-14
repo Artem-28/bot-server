@@ -33,6 +33,7 @@ import {
 import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
 
 // Helper
+import { formatParamHttp } from '@/base/helpers/formatter.helper';
 
 @Controller('projects/:projectId/scripts')
 @UseGuards(AuthJwtGuard)
@@ -48,8 +49,10 @@ export class ScriptController {
     @Body() body: CreateScriptDto,
   ): Promise<Script> {
     try {
-      const dto = { ...body, ...param };
-      return await this.scriptService.createScript(dto);
+      const { projectId } = formatParamHttp(param);
+      body.projectId = projectId;
+
+      return await this.scriptService.createScript(body);
     } catch (e) {
       throw new HttpException(e.response, e.status);
     }
@@ -61,8 +64,10 @@ export class ScriptController {
   @Permission(SCRIPT_VIEW)
   public async getScripts(@Param() param): Promise<Script[]> {
     try {
+      const { projectId } = formatParamHttp(param);
+
       return await this.scriptService.getScripts({
-        filter: { field: 'project_id', value: param.projectId },
+        filter: { field: 'project_id', value: projectId },
       });
     } catch (e) {
       throw new HttpException(e.response, e.status);
@@ -75,10 +80,12 @@ export class ScriptController {
   @Permission(SCRIPT_VIEW)
   public async info(@Param() param): Promise<Script> {
     try {
+      const { projectId, scriptId } = formatParamHttp(param);
+
       return await this.scriptService.getOneScript({
         filter: [
-          { field: 'id', value: param.scriptId },
-          { field: 'project_id', value: param.projectId },
+          { field: 'id', value: scriptId },
+          { field: 'project_id', value: projectId },
         ],
         relation: { name: 'questions' },
         throwException: true,
@@ -97,9 +104,12 @@ export class ScriptController {
     @Body() body: Partial<CreateScriptDto>,
   ): Promise<Script> {
     try {
-      await this.scriptService.updateScript(param, body, {
+      param = formatParamHttp(param);
+      await this.scriptService.updateScript(body, {
         throwException: true,
+        param,
       });
+
       return await this.scriptService.getOneScript({
         filter: { field: 'id', value: param.scriptId },
         throwException: true,
@@ -115,8 +125,9 @@ export class ScriptController {
   @Permission(SCRIPT_DELETE)
   public async remove(@Param() param): Promise<boolean> {
     try {
-      return await this.scriptService.removeScript(param, {
+      return await this.scriptService.removeScript({
         throwException: true,
+        param: formatParamHttp(param),
       });
     } catch (e) {
       throw new HttpException(e.response, e.status);

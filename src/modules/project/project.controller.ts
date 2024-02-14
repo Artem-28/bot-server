@@ -35,6 +35,7 @@ import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
 import { UpdateProjectDto } from '@/modules/project/dto/update-project.dto';
 
 // Helper
+import { formatParamHttp } from '@/base/helpers/formatter.helper';
 
 @Controller('projects')
 @UseGuards(AuthJwtGuard)
@@ -48,8 +49,8 @@ export class ProjectController {
   @Post()
   async create(@Req() req, @Body() body: CreateProjectDto): Promise<Project> {
     try {
-      const dto = { ...body, userId: req.user.id };
-      return await this.projectService.createProject(dto, {
+      body.userId = req.user.id;
+      return await this.projectService.createProject(body, {
         throwException: true,
       });
     } catch (e) {
@@ -91,9 +92,10 @@ export class ProjectController {
   @UseGuards(PermissionGuard)
   @Permission(PROJECT_VIEW)
   async info(@Param() param): Promise<Project> {
+    const { projectId } = formatParamHttp(param);
     try {
       return await this.projectService.getOneProject({
-        filter: { field: 'id', value: param.projectId },
+        filter: { field: 'id', value: projectId },
       });
     } catch (e) {
       throw new HttpException(e.response, e.status);
@@ -105,18 +107,18 @@ export class ProjectController {
   @UseGuards(PermissionGuard)
   @Permission(PROJECT_UPDATE)
   async update(
-    @Param() params,
+    @Param() param,
     @Body() body: UpdateProjectDto,
   ): Promise<Project> {
     try {
-      const id = params.projectId;
+      const { projectId } = formatParamHttp(param);
       // Обновляем проект
-      await this.projectService.updateProject(id, body, {
+      await this.projectService.updateProject(projectId, body, {
         throwException: true,
       });
       // Получаем обновленный проект
       return await this.projectService.getOneProject({
-        filter: { field: 'id', value: id },
+        filter: { field: 'id', value: projectId },
       });
     } catch (e) {
       throw new HttpException(e.response, e.status);
@@ -129,8 +131,8 @@ export class ProjectController {
   @Permission(PROJECT_DELETE)
   async remove(@Param() param): Promise<boolean> {
     try {
-      const id = param.projectId;
-      return await this.projectService.removeProject(id, {
+      const { projectId } = formatParamHttp(param);
+      return await this.projectService.removeProject(projectId, {
         throwException: true,
       });
     } catch (e) {
