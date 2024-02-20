@@ -22,7 +22,7 @@ import { AuthService } from '@/modules/auth/auth.service';
 // Types
 import { RegistrationUsersDto } from '@/modules/auth/dto/registration-users.dto';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
   constructor(readonly authService: AuthService) {}
 
