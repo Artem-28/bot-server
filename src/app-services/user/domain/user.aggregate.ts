@@ -10,6 +10,7 @@ import {
   validateSync,
 } from 'class-validator';
 import { Exclude } from 'class-transformer';
+import { DomainError } from '@app-services/error';
 
 export class UserAggregate extends UserServices implements User {
   @IsNumber()
@@ -46,7 +47,7 @@ export class UserAggregate extends UserServices implements User {
     _user.updatedAt = data?.id ? new Date() : _user.updatedAt;
     const errors = validateSync(_user, { whitelist: true });
     if (!!errors.length) {
-      throw new Error('User not valid');
+      throw new DomainError(errors, { message: 'User not valid ' });
     }
     return _user;
   }
