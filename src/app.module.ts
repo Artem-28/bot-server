@@ -13,7 +13,7 @@ import { AllExceptionFilter } from '@/base/filters/all-exception.filter';
 // Modules
 import { ConfirmationCodeModule } from '@/modules/confirmation-code/confirmation-code.module';
 import { AuthModule } from '@/modules/auth/auth.module';
-import { UserModule } from '@/modules/user/user.module';
+// import { UserModule } from '@/modules/user/user.module';
 import { ProjectModule } from '@/modules/project/project.module';
 import { ScriptModule } from '@/modules/script/script.module';
 import { FakeDataModule } from '@/modules/fake-data/fake-data.module';
@@ -24,18 +24,18 @@ import { QuestionModule } from './modules/question/question.module';
 import { AnswerModule } from './modules/answer/answer.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { CheckEntityModule } from './modules/check-entity/check-entity.module';
-import { TypeormModule } from '@/app-services';
+import { TypeormModule, UserModule } from '@/app-services';
 
 @Module({
   imports: [
     TypeormModule,
+    UserModule,
     ConfigModule.forRoot({
       load: [configuration, jwt],
       isGlobal: true, // Включение\отключение глобальной обрасти для конфига .env
     }),
     ConfirmationCodeModule,
     AuthModule,
-    UserModule,
     ProjectModule,
     ScriptModule,
     FakeDataModule,
