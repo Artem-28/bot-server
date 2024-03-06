@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 // Entity
 import { Project } from '@/modules/project/project.entity';
@@ -12,10 +12,13 @@ import { Options } from '@/base/interfaces/service.interface';
 
 // Helpers
 import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
+import { Respondent } from '@/modules/respondent/respondent.entity';
+import { checkRequiredField } from '@/base/helpers/object.helper';
 
 @Injectable()
 export class ProjectService {
   constructor(
+    private readonly _dataSource: DataSource,
     @InjectRepository(Project)
     private readonly _projectRepository: Repository<Project>,
   ) {}
@@ -51,6 +54,35 @@ export class ProjectService {
       throw new HttpException('project.update', 500);
     }
     return success;
+  }
+
+  // Добавление респондента в проект
+  public async addRespondentToProject(
+    respondent: Respondent,
+    options: Options,
+  ): Promise<Project | null> {
+    const { param, throwException, dataSourceManager } = options;
+    const isValid = checkRequiredField(param, ['projectId'], throwException);
+    if (!isValid) return null;
+
+    const projectId = param.projectId;
+    const project = await this.getOneProject({
+      filter: { field: 'id', value: projectId },
+      relation: { name: 'respondents' },
+      throwException,
+    });
+    if (!project) return null;
+
+    project.insertRespondent(respondent);
+
+    const manager = dataSourceManager || this._dataSource.manager;
+    const updatedProject = await manager.save(project);
+
+    if (!updatedProject && throwException) {
+      throw new HttpException('project.add_respondent', 500);
+    }
+    if (!updatedProject) return null;
+    return updatedProject;
   }
 
   // Удаление проекта

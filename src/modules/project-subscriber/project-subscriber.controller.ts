@@ -36,7 +36,6 @@ export class ProjectSubscriberController {
 
   // Добавление нового подписчика в проект
   @Post('/subscribe')
-  @UseGuards(PermissionGuard)
   public async subscribe(
     @Req() req,
     @Body() body: SubscribeProjectDto,

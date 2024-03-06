@@ -1,23 +1,37 @@
-import { Column, Entity, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 
 // Module
 
 // Controller
 
 // Service
+
+// Entity
 import { BaseEntity } from '@/base/entities/base.entity';
 import { User } from '@/modules/user/user.entity';
 import { Script } from '@/modules/script/script.entity';
 import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
 import { PermissionUser } from '@/modules/permission/permission-user.entity';
-
-// Entity
+import { Respondent } from '@/modules/respondent/respondent.entity';
 
 // Guard
 
 // Types
 
 // Helper
+import { toArray } from '@/base/helpers/array.helper';
+import {
+  checkRequiredField,
+  compareFieldValues,
+} from '@/base/helpers/object.helper';
 
 @Entity({ name: 'projects' })
 export class Project extends BaseEntity {
@@ -38,24 +52,27 @@ export class Project extends BaseEntity {
     () => ProjectSubscriber,
     (projectSubscriber) => projectSubscriber.project,
   )
-  public subscribers: User[];
+  public subscribers: ProjectSubscriber[];
 
   @OneToMany(() => PermissionUser, (permissionUser) => permissionUser.project)
   public permissions: PermissionUser[];
 
-  // @ManyToMany(() => User, (user) => user.subscribedProjects)
-  // @JoinTable({
-  //   name: 'project_users',
-  //   joinColumn: {
-  //     name: 'project_id',
-  //     referencedColumnName: 'id',
-  //   },
-  //   inverseJoinColumn: {
-  //     name: 'user_id',
-  //     referencedColumnName: 'id',
-  //   },
-  // })
-  // subscribers: User[];
+  @ManyToMany(() => Respondent, (respondent) => respondent.projects, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'respondent_projects',
+    joinColumn: {
+      name: 'project_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'respondent_id',
+      referencedColumnName: 'id',
+    },
+  })
+  respondents: Respondent[];
+
   public subscriptionAt: Date | null = null;
 
   // get subscribeAt() {
@@ -69,5 +86,26 @@ export class Project extends BaseEntity {
 
   public checkOwner(userId: number): boolean {
     return this.userId === userId;
+  }
+
+  public existRespondent(
+    respondent: Respondent,
+    field: string | string[] = 'id',
+  ): boolean {
+    const fields = toArray(field);
+    const checkFields = checkRequiredField(respondent, fields);
+    if (!checkFields) return false;
+    return toArray(this.respondents).some((r) =>
+      compareFieldValues(r, respondent, fields),
+    );
+  }
+
+  public insertRespondent(respondents: Respondent | Respondent[]) {
+    const newRespondents = [];
+    toArray(respondents).forEach((respondent) => {
+      if (this.existRespondent(respondent)) return;
+      newRespondents.push(respondent);
+    });
+    this.respondents = [...toArray(this.respondents), ...newRespondents];
   }
 }

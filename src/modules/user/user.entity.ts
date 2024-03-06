@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 // Module
 
@@ -11,11 +11,11 @@ import { BaseEntity } from '@/base/entities/base.entity';
 import { Project } from '@/modules/project/project.entity';
 import { ProjectSubscriber } from '@/modules/project-subscriber/projectSubscriber.entity';
 import { PermissionUser } from '@/modules/permission/permission-user.entity';
-import { getUpdateDto } from '@/modules/user/dto/user.dto';
 
 // Guard
 
 // Types
+import { getUpdateDto } from '@/modules/user/dto/user.dto';
 
 // Helper
 

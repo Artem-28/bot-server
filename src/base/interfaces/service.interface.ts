@@ -1,4 +1,4 @@
-import { Brackets } from 'typeorm';
+import { Brackets, EntityManager } from 'typeorm';
 import { BaseHttpParam } from '@/base/interfaces/base.interface';
 
 export interface QueryFilter {
@@ -20,6 +20,7 @@ export interface Options {
   filter?: QueryFilter | QueryFilter[];
   relation?: QueryRelation | QueryRelation[];
   param?: BaseHttpParam;
+  dataSourceManager?: EntityManager;
 }
 
 export interface QuerySelect {

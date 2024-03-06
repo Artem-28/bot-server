@@ -14,3 +14,15 @@ export function checkRequiredField<T>(
   }
   return valid;
 }
+
+export function compareFieldValues<T, R>(
+  obj: T,
+  obj2: R,
+  field: string | string[],
+): boolean {
+  const fields = toArray(field);
+  return fields.every((f) => {
+    if (!obj.hasOwnProperty(f) || !obj2.hasOwnProperty(f)) return false;
+    return obj[f] === obj2[f];
+  });
+}

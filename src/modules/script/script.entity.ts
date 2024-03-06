@@ -9,6 +9,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '@/base/entities/base.entity';
 import { Project } from '@/modules/project/project.entity';
 import { Question } from '@/modules/question/question.entity';
+import { Session } from '@/modules/session/session.entity';
 
 // Guard
 
@@ -32,6 +33,9 @@ export class Script extends BaseEntity {
 
   @OneToMany(() => Question, (question) => question.script)
   public questions: Question[];
+
+  @OneToMany(() => Session, (session) => session.script)
+  public sessions: Session[];
 
   constructor(partial: Partial<Script>) {
     super();

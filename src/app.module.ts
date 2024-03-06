@@ -26,6 +26,10 @@ import { QuestionModule } from './modules/question/question.module';
 import { AnswerModule } from './modules/answer/answer.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { CheckEntityModule } from './modules/check-entity/check-entity.module';
+import { RespondentModule } from './modules/respondent/respondent.module';
+import { MessageModule } from './modules/message/message.module';
+import { SessionModule } from './modules/session/session.module';
+import { ClientApiModule } from './modules/client-api/client-api.module';
 
 @Module({
   imports: [
@@ -51,6 +55,10 @@ import { CheckEntityModule } from './modules/check-entity/check-entity.module';
     AnswerModule,
     PermissionModule,
     CheckEntityModule,
+    RespondentModule,
+    MessageModule,
+    SessionModule,
+    ClientApiModule,
   ],
   controllers: [],
   providers: [

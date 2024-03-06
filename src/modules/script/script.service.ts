@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 // Module
 // Controller
 // Service
+import { RespondentService } from '@/modules/respondent/respondent.service';
 // Entity
 import { Script } from '@/modules/script/script.entity';
 
@@ -16,18 +17,18 @@ import { CreateScriptDto } from '@/modules/script/dto/create-script.dto';
 // Helper
 import QueryBuilderHelper from '@/base/helpers/query-builder.helper';
 import { validateUpdateDto } from '@/modules/script/util/validate-dto';
+import { StartScriptDto } from '@/modules/client-api/dto/start-script.dto';
 
 @Injectable()
 export class ScriptService {
   constructor(
     @InjectRepository(Script)
     private readonly _scriptRepository: Repository<Script>,
+    private readonly _respondentService: RespondentService,
   ) {}
 
   // Удаление скрипта по id
-  public async removeScript(
-    options: Options,
-  ): Promise<boolean> {
+  public async removeScript(options: Options): Promise<boolean> {
     const { scriptId: id, projectId } = options.param;
     const response = await this._scriptRepository
       .createQueryBuilder()

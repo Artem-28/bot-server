@@ -3,8 +3,8 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import {
   QueryFilter,
   QueryRelation,
-  QuerySelect,
 } from '@/base/interfaces/service.interface';
+import { BaseObjectMap } from '@/base/interfaces/base.interface';
 
 // Entities
 import { Project } from '@/modules/project/project.entity';
@@ -14,11 +14,12 @@ import { User } from '@/modules/user/user.entity';
 import { DropdownOption } from '@/modules/dropdown-option/dropdown-option.entity';
 import { Question } from '@/modules/question/question.entity';
 import { Permission } from '@/modules/permission/permission.entity';
+import { Respondent } from '@/modules/respondent/respondent.entity';
+import { PermissionUser } from '@/modules/permission/permission-user.entity';
+import { Session } from '@/modules/session/session.entity';
 
 // Helpers
 import { toArray } from '@/base/helpers/array.helper';
-import { PermissionUser } from '@/modules/permission/permission-user.entity';
-import { BaseObjectMap } from '@/base/interfaces/base.interface';
 
 type Entity =
   | Project
@@ -28,20 +29,14 @@ type Entity =
   | User
   | DropdownOption
   | Permission
-  | PermissionUser;
+  | PermissionUser
+  | Respondent
+  | Session;
 interface Options {
   alias?: string;
   filter?: QueryFilter | QueryFilter[];
   relation?: QueryRelation | QueryRelation[];
 }
-interface BuilderRelation {
-  [key: string]: QueryRelation;
-}
-
-interface BuilderFilter {
-  [key: string]: QueryFilter;
-}
-
 export default class QueryBuilderHelper<T extends Entity> {
   private readonly _repository: Repository<T>;
   private _builder: SelectQueryBuilder<T>;
@@ -173,8 +168,11 @@ export default class QueryBuilderHelper<T extends Entity> {
         case 'innerJoin':
           this._builder.innerJoin(name, alias, condition);
           break;
-        default:
+        case 'leftJoin':
           this._builder.leftJoin(name, alias, condition);
+          break;
+        default:
+          this._builder.leftJoinAndSelect(name, alias, condition);
       }
     });
   }
