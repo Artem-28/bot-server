@@ -3,6 +3,7 @@ import { UserServices } from './services';
 import {
   IsBoolean,
   IsDate,
+  IsDefined,
   IsEmail,
   IsNotEmpty,
   IsNumber,
@@ -17,18 +18,29 @@ export class UserAggregate extends UserServices implements User {
   id?: number;
 
   @IsEmail()
+  @IsDefined()
   email: string;
 
   @IsString()
   @IsNotEmpty()
+  @IsDefined()
   @Exclude()
   password: string;
 
   @IsBoolean()
+  @IsDefined()
   licenseAgreement = false;
+
+  @IsString()
   phone = null;
+
+  @IsDate()
   emailVerifiedAt = null;
+
+  @IsDate()
   lastActiveAt = null;
+
+  @IsDate()
   phoneVerifiedAt = null;
 
   @IsDate()

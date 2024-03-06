@@ -1,2 +1,2 @@
 export * from './user.module';
-export * from './domain';
+export { User as IUser, UserAggregate } from './domain';

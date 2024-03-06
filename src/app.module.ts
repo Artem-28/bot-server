@@ -24,10 +24,11 @@ import { QuestionModule } from './modules/question/question.module';
 import { AnswerModule } from './modules/answer/answer.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { CheckEntityModule } from './modules/check-entity/check-entity.module';
-import { TypeormModule, UserModule } from '@/app-services';
+import { TypeormModule, UserModule, CommonModule } from '@/app-services';
 
 @Module({
   imports: [
+    CommonModule,
     TypeormModule,
     UserModule,
     ConfigModule.forRoot({
