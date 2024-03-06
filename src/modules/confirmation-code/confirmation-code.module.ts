@@ -12,7 +12,7 @@ import { ConfirmationCodeService } from '@/modules/confirmation-code/confirmatio
 import { MailingService } from '@/modules/mailing/mailing.service';
 
 // Entity
-import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code.entity';
+import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ConfirmationCode]), MailingModule],

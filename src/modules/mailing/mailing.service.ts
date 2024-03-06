@@ -9,7 +9,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 // Service
 
 // Entity
-import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code.entity';
+import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code';
 
 // Guard
 

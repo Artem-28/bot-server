@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import {Column, Entity, ManyToMany, OneToMany, PrimaryColumn} from 'typeorm';
 import { Exclude } from 'class-transformer';
 // Module
 
@@ -20,7 +20,9 @@ import { getUpdateDto } from '@/modules/user/dto/user.dto';
 // Helper
 
 @Entity({ name: 'users' })
-export class User extends BaseEntity {
+export class User {
+  @PrimaryColumn()
+  id: number;
   @Column()
   email: string;
 
@@ -60,7 +62,6 @@ export class User extends BaseEntity {
   public subscriptionAt: Date | null = null;
 
   constructor(partial: Partial<User>) {
-    super();
     Object.assign(this, partial);
   }
 

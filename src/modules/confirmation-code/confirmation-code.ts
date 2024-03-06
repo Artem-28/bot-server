@@ -1,9 +1,11 @@
-import { Column, Entity } from 'typeorm';
+import {Column, Entity, PrimaryColumn} from 'typeorm';
 import { BaseEntity } from '@/base/entities/base.entity';
 import { ConfirmationTypeEnum } from '@/base/enum/confirmation/confirmation-type.enum';
 
 @Entity({ name: 'confirmation_codes' })
-export class ConfirmationCode extends BaseEntity {
+export class ConfirmationCode {
+  @PrimaryColumn()
+  id: number;
   @Column()
   value: string;
 
@@ -17,16 +19,16 @@ export class ConfirmationCode extends BaseEntity {
   phone: string;
 
   get updatedTimestamp() {
-    const data = this.updatedAt || this.createdAt;
-    return new Date(data).getTime();
+    // const data = this.updatedAt || this.createdAt;
+    return new Date().getTime();
   }
 
   get createdTimestamp() {
-    return new Date(this.createdAt).getTime();
+    return new Date().getTime();
   }
 
   constructor(partial: Partial<ConfirmationCode>) {
-    super();
+    // super();
     Object.assign(this, partial);
   }
 }

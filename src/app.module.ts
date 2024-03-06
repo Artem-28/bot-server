@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Configuration
 import configuration from '@/config/configuration';
-import typeorm from '@/config/typeorm';
 import jwt from '@/config/jwt';
 
 // Providers
@@ -26,17 +24,14 @@ import { QuestionModule } from './modules/question/question.module';
 import { AnswerModule } from './modules/answer/answer.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { CheckEntityModule } from './modules/check-entity/check-entity.module';
+import { TypeormModule } from '@/app-services';
 
 @Module({
   imports: [
+    TypeormModule,
     ConfigModule.forRoot({
-      load: [configuration, typeorm, jwt],
+      load: [configuration, jwt],
       isGlobal: true, // Включение\отключение глобальной обрасти для конфига .env
-    }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => config.get('typeorm'),
     }),
     ConfirmationCodeModule,
     AuthModule,
@@ -52,7 +47,6 @@ import { CheckEntityModule } from './modules/check-entity/check-entity.module';
     PermissionModule,
     CheckEntityModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_INTERCEPTOR,

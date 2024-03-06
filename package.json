@@ -19,14 +19,18 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node ./node_modules/typeorm/cli",
-    "migration:run": "npm run typeorm migration:run -- -d ./src/config/typeorm.ts",
-    "migration:generate": "npm run typeorm -- -d ./src/config/typeorm.ts migration:generate ./src/migrations/$npm_config_name",
+    "migration:run": "npm run typeorm migration:run -- -d ./src/app-services/typeorm/typeorm.config.ts",
+    "migration:generate": "npm run typeorm -- -d ./src/app-services/typeorm/typeorm.config.ts migration:generate ./src/migrations/%npm_config_name%",
     "migration:create": "npm run typeorm -- migration:create ./src/migrations/$npm_config_name",
-    "migration:revert": "npm run typeorm -- -d ./src/config/typeorm.ts migration:revert",
+    "migration:revert": "npm run typeorm -- -d ./src/app-services/typeorm/typeorm.config.ts migration:revert",
     "controller": "nest g controller -- ./modules/$npm_config_name",
     "module": "nest g module -- ./modules/$npm_config_name",
     "service": "nest g service -- ./modules/$npm_config_name",
-    "module:create": "npm run module -- && npm run service -- && npm run controller --"
+    "module:create": "npm run module -- && npm run service -- && npm run controller --",
+    "app-service:module": "nest g module -- ./app-services/$npm_config_name",
+    "app-service:service": "nest g service -- ./app-services/$npm_config_name",
+    "app-service:controller": "nest g controller -- ./app-services/$npm_config_name",
+    "app-service:create": "npm run app-service:module -- && npm run app-service:service -- && npm run app-service:controller --"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.9.1",

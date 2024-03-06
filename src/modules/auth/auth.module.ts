@@ -18,7 +18,7 @@ import { AuthController } from '@/modules/auth/auth.controller';
 
 // Entity
 import { User } from '@/modules/user/user.entity';
-import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code.entity';
+import { ConfirmationCode } from '@/modules/confirmation-code/confirmation-code';
 
 import { LocalStrategy } from '@/modules/auth/passport/strategies/local.strategy';
 import { JwtStrategy } from '@/modules/auth/passport/strategies/jwt.strategy';
