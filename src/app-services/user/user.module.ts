@@ -8,6 +8,7 @@ import { USER_EVENT_HANDLERS } from './service/events';
 import { UserFacade } from '@app-services/user/service';
 import { UserFacadeFactory } from '@app-services/user/providers/user-facade.factory';
 import { UserRepository } from '@app-services/user/providers';
+import {UserAdapter} from "@app-services/user/providers/user.adapter";
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([UserEntity])],
@@ -19,6 +20,10 @@ import { UserRepository } from '@app-services/user/providers';
       provide: UserFacade,
       inject: [CommandBus, QueryBus, EventBus],
       useFactory: UserFacadeFactory,
+    },
+    {
+      provide: UserRepository,
+      useClass: UserAdapter,
     },
     UserRepository as Provider,
   ],
