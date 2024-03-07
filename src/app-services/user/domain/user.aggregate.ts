@@ -6,7 +6,7 @@ import {
   IsDefined,
   IsEmail,
   IsNotEmpty,
-  IsNumber,
+  IsNumber, IsOptional,
   IsString,
   validateSync,
 } from 'class-validator';
@@ -14,6 +14,7 @@ import { Exclude } from 'class-transformer';
 import { DomainError } from '@app-services/error';
 
 export class UserAggregate extends UserServices implements User {
+  @IsOptional()
   @IsNumber()
   id?: number;
 
@@ -31,15 +32,19 @@ export class UserAggregate extends UserServices implements User {
   @IsDefined()
   licenseAgreement = false;
 
+  @IsOptional()
   @IsString()
   phone = null;
 
+  @IsOptional()
   @IsDate()
   emailVerifiedAt = null;
 
+  @IsOptional()
   @IsDate()
   lastActiveAt = null;
 
+  @IsOptional()
   @IsDate()
   phoneVerifiedAt = null;
 

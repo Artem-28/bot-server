@@ -1,14 +1,14 @@
-import { Module, OnModuleInit, Provider } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { CommandBus, CqrsModule, EventBus, QueryBus } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/app-services';
 import { USER_COMMAND_HANDLERS } from './service/commands';
 import { USER_QUERY_HANDLERS } from './service/queries';
 import { USER_EVENT_HANDLERS } from './service/events';
-import { UserFacade } from '@app-services/user/service';
-import { UserFacadeFactory } from '@app-services/user/providers/user-facade.factory';
-import { UserRepository } from '@app-services/user/providers';
-import {UserAdapter} from "@app-services/user/providers/user.adapter";
+import { UserFacade } from './service';
+import { UserFacadeFactory } from './providers/user-facade.factory';
+import { UserRepository } from './providers';
+import { UserAdapter } from './providers/user.adapter';
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([UserEntity])],
@@ -16,6 +16,7 @@ import {UserAdapter} from "@app-services/user/providers/user.adapter";
     ...USER_COMMAND_HANDLERS,
     ...USER_QUERY_HANDLERS,
     ...USER_EVENT_HANDLERS,
+    UserAdapter,
     {
       provide: UserFacade,
       inject: [CommandBus, QueryBus, EventBus],
@@ -25,7 +26,6 @@ import {UserAdapter} from "@app-services/user/providers/user.adapter";
       provide: UserRepository,
       useClass: UserAdapter,
     },
-    UserRepository as Provider,
   ],
   exports: [UserFacade],
 })

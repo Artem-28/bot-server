@@ -1,4 +1,13 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { UserFacade } from '@app-services/user/service';
+import { CreateUserDto } from '@/api/controllers/user/dto';
 
-@Controller('user')
-export class UserController {}
+@Controller('api/v1/users')
+export class UserController {
+  constructor(private readonly userFacade: UserFacade) {}
+
+  @Post()
+  async createUser(@Body() dto: CreateUserDto) {
+    return this.userFacade.commands.createUser(dto);
+  }
+}
