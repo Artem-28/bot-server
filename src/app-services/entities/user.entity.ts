@@ -16,7 +16,7 @@ import { BaseEntity } from './base-entity';
 // Helper
 
 @Entity({ name: 'user-service_users' })
-export class User extends BaseEntity {
+export class UserEntity extends BaseEntity {
   @Column()
   email: string;
 

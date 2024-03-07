@@ -1,4 +1,4 @@
-import {User as IUser, UserAggregate} from '../domain';
+import { User as IUser, UserAggregate } from '../domain';
 
 export abstract class UserRepository {
   abstract save(user: IUser): Promise<UserAggregate>;
