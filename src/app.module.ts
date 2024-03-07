@@ -25,12 +25,14 @@ import { AnswerModule } from './modules/answer/answer.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { CheckEntityModule } from './modules/check-entity/check-entity.module';
 import { TypeormModule, UserModule, CommonModule } from '@/app-services';
+import { ApiModule } from '@/api';
 
 @Module({
   imports: [
     CommonModule,
     TypeormModule,
     UserModule,
+    ApiModule,
     ConfigModule.forRoot({
       load: [configuration, jwt],
       isGlobal: true, // Включение\отключение глобальной обрасти для конфига .env
