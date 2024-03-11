@@ -2,7 +2,8 @@ import { User as IUser, UserAggregate } from '../domain';
 
 export abstract class UserRepository {
   abstract save(user: IUser): Promise<UserAggregate>;
+  abstract update(user: IUser): Promise<boolean>;
   abstract findOne(id: number): Promise<UserAggregate | null>;
   abstract findAll(): Promise<[UserAggregate[], number]>;
-  abstract delete(id: number): Promise<boolean>;
+  abstract remove(id: number): Promise<boolean>;
 }

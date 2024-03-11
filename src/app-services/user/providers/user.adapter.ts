@@ -14,7 +14,7 @@ export class UserAdapter implements UserRepository {
     private readonly _userRepository: Repository<UserEntity>,
   ) {}
 
-  async delete(id: number): Promise<boolean> {
+  async remove(id: number): Promise<boolean> {
     const result = await this._userRepository.delete({ id });
     return !!result;
   }
@@ -33,5 +33,16 @@ export class UserAdapter implements UserRepository {
   async save(user: IUser): Promise<UserAggregate> {
     const result = await this._userRepository.save(user);
     return UserAggregate.create(result);
+  }
+
+  async update(user: IUser): Promise<boolean> {
+    const response = await this._userRepository
+      .createQueryBuilder()
+      .update()
+      .set(user)
+      .where({ id: user.id })
+      .execute();
+
+    return !!response.affected;
   }
 }
