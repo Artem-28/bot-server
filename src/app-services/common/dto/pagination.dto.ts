@@ -6,11 +6,11 @@ export class PaginationDto {
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0)
   @Type(() => Number)
-  offset: number = 0;
+  skip: number = 0;
 
   @IsOptional()
   @IsNumber({ allowNaN: false, allowInfinity: false })
   @Type(() => Number)
   @IsPositive()
-  limit: number = 0;
+  take: number = 0;
 }

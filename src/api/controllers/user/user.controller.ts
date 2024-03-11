@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { UserFacade } from '@app-services/user/service';
 import { CreateUserDto, UpdateUserDto } from '@/api/controllers/user/dto';
+import { QueryOptions } from '@app-services';
 
 @Controller('api/v1/users')
 export class UserController {
@@ -38,7 +39,7 @@ export class UserController {
   }
 
   @Get()
-  async getUsers() {
-    return await this.userFacade.queries.getUsers();
+  async getUsers(@QueryOptions() { pagination }) {
+    return await this.userFacade.queries.getUsers(pagination);
   }
 }

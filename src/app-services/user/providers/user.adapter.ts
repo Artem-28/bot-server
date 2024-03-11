@@ -25,10 +25,7 @@ export class UserAdapter implements UserRepository {
     pagination?: PaginationDto,
   ): Promise<[UserAggregate[], number]> {
     // Получаем инстанс класса пагинации с дефолтными полями если такие небыли преданы
-    const { limit: take, offset: skip } = plainToInstance(
-      PaginationDto,
-      pagination || {},
-    );
+    const { take, skip } = plainToInstance(PaginationDto, pagination || {});
     const options: FindManyOptions<UserEntity> = {
       take,
       skip,
@@ -37,7 +34,6 @@ export class UserAdapter implements UserRepository {
       },
     };
     const [data, count] = await this._userRepository.findAndCount(options);
-    console.log([data.map((user) => UserAggregate.create(user)), count]);
     return [data.map((user) => UserAggregate.create(user)), count];
   }
 
