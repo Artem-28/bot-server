@@ -14,6 +14,7 @@ import { GetUserQuery } from '@app-services/user/service/queries/get-user/get-us
 import { GetUserQueryHandler } from '@app-services/user/service/queries/get-user/get-user.query-handler';
 import { GetUsersQuery } from '@app-services/user/service/queries/get-users/get-users.query';
 import { GetUsersQueryHandler } from '@app-services/user/service/queries/get-users/get-users.query-handler';
+import { PaginationDto } from '@app-services/common/dto';
 
 @Injectable()
 export class UserFacade {
@@ -30,7 +31,7 @@ export class UserFacade {
   };
   queries = {
     getUser: (id: number) => this.getUser(id),
-    getUsers: () => this.getUsers(),
+    getUsers: (pagination?: PaginationDto) => this.getUsers(pagination),
   };
   events = {};
 
@@ -61,10 +62,10 @@ export class UserFacade {
     );
   }
 
-  private getUsers() {
+  private getUsers(pagination?: PaginationDto) {
     return this._queryBus.execute<
       GetUsersQuery,
       GetUsersQueryHandler['execute']
-    >(new GetUsersQuery());
+    >(new GetUsersQuery(pagination));
   }
 }

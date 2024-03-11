@@ -5,12 +5,13 @@ import { UserRepository } from '@app-services/user/providers';
 
 @QueryHandler(GetUsersQuery)
 export class GetUsersQueryHandler
-  implements IQueryHandler<GetUsersQuery, UserAggregate[]>
+  implements IQueryHandler<GetUsersQuery, [UserAggregate[], number]>
 {
   constructor(private readonly _userRepository: UserRepository) {}
 
-  async execute(query: GetUsersQuery): Promise<UserAggregate[]> {
-    const result = await this._userRepository.findAll();
-    return [];
+  async execute({
+    pagination,
+  }: GetUsersQuery): Promise<[UserAggregate[], number]> {
+    return await this._userRepository.findAll(pagination);
   }
 }
