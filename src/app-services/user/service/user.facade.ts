@@ -10,6 +10,10 @@ import { UpdateUserCommand } from '@app-services/user/service/commands/update-us
 import { UpdateUserCommandHandler } from '@app-services/user/service/commands/update-user/update-user.command-handler';
 import { RemoveUserCommand } from '@app-services/user/service/commands/remove-user/remove-user.command';
 import { RemoveUserCommandHandler } from '@app-services/user/service/commands/remove-user/remove-user.command-handler';
+import { GetUserQuery } from '@app-services/user/service/queries/get-user/get-user.query';
+import { GetUserQueryHandler } from '@app-services/user/service/queries/get-user/get-user.query-handler';
+import { GetUsersQuery } from '@app-services/user/service/queries/get-users/get-users.query';
+import { GetUsersQueryHandler } from '@app-services/user/service/queries/get-users/get-users.query-handler';
 
 @Injectable()
 export class UserFacade {
@@ -24,7 +28,10 @@ export class UserFacade {
     updateUser: (dto: UpdateUserDto) => this.updateUser(dto),
     removeUser: (id: number) => this.removeUser(id),
   };
-  queries = {};
+  queries = {
+    getUser: (id: number) => this.getUser(id),
+    getUsers: () => this.getUsers(),
+  };
   events = {};
 
   private createUser(dto: CreateUserDto) {
@@ -46,5 +53,18 @@ export class UserFacade {
       RemoveUserCommand,
       RemoveUserCommandHandler['execute']
     >(new RemoveUserCommand(id));
+  }
+
+  private getUser(id: number) {
+    return this._queryBus.execute<GetUserQuery, GetUserQueryHandler['execute']>(
+      new GetUserQuery(id),
+    );
+  }
+
+  private getUsers() {
+    return this._queryBus.execute<
+      GetUsersQuery,
+      GetUsersQueryHandler['execute']
+    >(new GetUsersQuery());
   }
 }

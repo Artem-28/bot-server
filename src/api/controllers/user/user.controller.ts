@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Patch, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Patch,
+  Delete,
+  Get,
+} from '@nestjs/common';
 import { UserFacade } from '@app-services/user/service';
 import { CreateUserDto, UpdateUserDto } from '@/api/controllers/user/dto';
 
@@ -21,5 +29,16 @@ export class UserController {
   async removeUser(@Param() param) {
     const id = Number(param.userId);
     return await this.userFacade.commands.removeUser(id);
+  }
+
+  @Get('/:userId')
+  async getUser(@Param() param) {
+    const id = Number(param.userId);
+    return await this.userFacade.queries.getUser(id);
+  }
+
+  @Get()
+  async getUsers() {
+    return await this.userFacade.queries.getUsers();
   }
 }
