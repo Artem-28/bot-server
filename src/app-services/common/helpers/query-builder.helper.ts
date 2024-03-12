@@ -1,15 +1,13 @@
 import {
   toArray,
-  UserEntity,
   OrderDto,
   PaginationDto,
   QueryBuilderOptionsDto,
+  AnyEntity,
 } from '@/app-services';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 
-type Entity = UserEntity;
-
-export class QueryBuilderHelper<T extends Entity> {
+export class QueryBuilderHelper<T extends AnyEntity> {
   private readonly _repository: Repository<T>;
   private readonly _alias: string;
   private _builder: SelectQueryBuilder<T>;
