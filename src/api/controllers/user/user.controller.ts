@@ -6,6 +6,7 @@ import {
   Patch,
   Delete,
   Get,
+  HttpException,
 } from '@nestjs/common';
 import { UserFacade } from '@app-services/user/service';
 import { CreateUserDto, UpdateUserDto } from '@/api/controllers/user/dto';
@@ -17,29 +18,62 @@ export class UserController {
 
   @Post()
   async createUser(@Body() dto: CreateUserDto) {
-    return await this.userFacade.commands.createUser(dto);
+    try {
+      return await this.userFacade.commands.createUser(dto);
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
   }
 
   @Patch('/:userId')
   async updateUser(@Param() param, @Body() dto: UpdateUserDto) {
     const id = Number(param.userId);
-    return await this.userFacade.commands.updateUser({ id, ...dto });
+    try {
+      return await this.userFacade.commands.updateUser(
+        { id, ...dto },
+        { throwExceptions: true },
+      );
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
   }
 
   @Delete('/:userId')
   async removeUser(@Param() param) {
     const id = Number(param.userId);
-    return await this.userFacade.commands.removeUser(id);
+    try {
+      return await this.userFacade.commands.removeUser(id, {
+        throwExceptions: true,
+      });
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
   }
 
   @Get('/:userId')
   async getUser(@Param() param) {
     const id = Number(param.userId);
-    return await this.userFacade.queries.getUser(id);
+
+    try {
+      return await this.userFacade.queries.getUser({
+        filter: { field: 'id', value: id },
+        throwExceptions: true,
+      });
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
   }
 
   @Get()
   async getUsers(@QueryOptions() options) {
-    return await this.userFacade.queries.getUsers(options);
+    try {
+      return await this.userFacade.queries.getUsers({
+        ...options,
+        filter: { field: 'id', value: [10, 11] },
+        throwExceptions: true,
+      });
+    } catch (e) {
+      throw new HttpException(e.response, e.status);
+    }
   }
 }

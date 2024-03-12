@@ -14,7 +14,7 @@ import { GetUserQuery } from '@app-services/user/service/queries/get-user/get-us
 import { GetUserQueryHandler } from '@app-services/user/service/queries/get-user/get-user.query-handler';
 import { GetUsersQuery } from '@app-services/user/service/queries/get-users/get-users.query';
 import { GetUsersQueryHandler } from '@app-services/user/service/queries/get-users/get-users.query-handler';
-import {PaginationDto, QueryBuilderOptionsDto} from '@app-services/common/dto';
+import { QueryOptionsDto } from '@app-services';
 
 @Injectable()
 export class UserFacade {
@@ -25,44 +25,47 @@ export class UserFacade {
   ) {}
 
   commands = {
-    createUser: (dto: CreateUserDto) => this.createUser(dto),
-    updateUser: (dto: UpdateUserDto) => this.updateUser(dto),
-    removeUser: (id: number) => this.removeUser(id),
+    createUser: (dto: CreateUserDto, options?: QueryOptionsDto) =>
+      this.createUser(dto, options),
+    updateUser: (dto: UpdateUserDto, options?: QueryOptionsDto) =>
+      this.updateUser(dto, options),
+    removeUser: (id: number, options?: QueryOptionsDto) =>
+      this.removeUser(id, options),
   };
   queries = {
-    getUser: (id: number) => this.getUser(id),
-    getUsers: (options?: QueryBuilderOptionsDto) => this.getUsers(options),
+    getUser: (options?: QueryOptionsDto) => this.getUser(options),
+    getUsers: (options?: QueryOptionsDto) => this.getUsers(options),
   };
   events = {};
 
-  private createUser(dto: CreateUserDto) {
+  private createUser(dto: CreateUserDto, options?: QueryOptionsDto) {
     return this._commandBus.execute<
       CreateUserCommand,
       CreateUserCommandHandler['execute']
-    >(new CreateUserCommand(dto));
+    >(new CreateUserCommand(dto, options));
   }
 
-  private updateUser(dto: UpdateUserDto) {
+  private updateUser(dto: UpdateUserDto, options?: QueryOptionsDto) {
     return this._commandBus.execute<
       UpdateUserCommand,
       UpdateUserCommandHandler['execute']
-    >(new UpdateUserCommand(dto));
+    >(new UpdateUserCommand(dto, options));
   }
 
-  private removeUser(id: number) {
+  private removeUser(id: number, options?: QueryOptionsDto) {
     return this._commandBus.execute<
       RemoveUserCommand,
       RemoveUserCommandHandler['execute']
-    >(new RemoveUserCommand(id));
+    >(new RemoveUserCommand(id, options));
   }
 
-  private getUser(id: number) {
+  private getUser(options?: QueryOptionsDto) {
     return this._queryBus.execute<GetUserQuery, GetUserQueryHandler['execute']>(
-      new GetUserQuery(id),
+      new GetUserQuery(options),
     );
   }
 
-  private getUsers(options?: QueryBuilderOptionsDto) {
+  private getUsers(options?: QueryOptionsDto) {
     return this._queryBus.execute<
       GetUsersQuery,
       GetUsersQueryHandler['execute']

@@ -9,7 +9,7 @@ export class GetUserQueryHandler
 {
   constructor(private readonly _userRepository: UserRepository) {}
 
-  async execute({ id }: GetUserQuery): Promise<UserAggregate> {
-    return await this._userRepository.findOne(id);
+  async execute({ options }: GetUserQuery): Promise<UserAggregate> {
+    return await this._userRepository.findOne(options);
   }
 }

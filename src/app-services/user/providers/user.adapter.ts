@@ -1,11 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { UserAggregate, User as IUser } from '../domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import {QueryBuilderHelper, QueryBuilderOptionsDto, UserEntity} from '@app-services';
-import { FindManyOptions, Repository } from 'typeorm';
-import { PaginationDto } from '@app-services/common/dto';
-import {instanceToInstance, plainToInstance} from 'class-transformer';
+import { QueryBuilderHelper, QueryOptionsDto, UserEntity } from '@app-services';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserAdapter implements UserRepository {
@@ -16,22 +14,30 @@ export class UserAdapter implements UserRepository {
     private readonly _userRepository: Repository<UserEntity>,
   ) {}
 
-  async remove(id: number): Promise<boolean> {
-    const result = await this._userRepository.delete({ id });
-    return !!result;
+  async remove(id: number, options?: QueryOptionsDto): Promise<boolean> {
+    const throwExceptions = options && options.throwExceptions;
+    const response = await this._userRepository.delete({ id });
+
+    const success = !!response.affected;
+    if (!success && throwExceptions) {
+      throw new HttpException('user.remove', 400);
+    }
+    return success;
   }
 
-  async findAll(
-    options?: QueryBuilderOptionsDto,
-  ): Promise<[UserAggregate[], number]> {
-    // Получаем инстанс класса пагинации с дефолтными полями если такие небыли преданы
+  async findAll(options?: QueryOptionsDto): Promise<[UserAggregate[], number]> {
     const queryHelper = new QueryBuilderHelper(this._userRepository, options);
     const [data, count] = await queryHelper.builder.getManyAndCount();
     return [data.map((user) => UserAggregate.create(user)), count];
   }
 
-  async findOne(id: number): Promise<UserAggregate | null> {
-    const result = await this._userRepository.findOneBy({ id });
+  async findOne(options?: QueryOptionsDto): Promise<UserAggregate | null> {
+    const throwExceptions = options && options.throwExceptions;
+    const queryHelper = new QueryBuilderHelper(this._userRepository, options);
+    const result = await queryHelper.builder.getOne();
+    if (!result && throwExceptions) {
+      throw new HttpException('user.get_one', 400);
+    }
     if (!result) return null;
     return UserAggregate.create(result);
   }
@@ -41,7 +47,9 @@ export class UserAdapter implements UserRepository {
     return UserAggregate.create(result);
   }
 
-  async update(user: IUser): Promise<boolean> {
+  async update(user: IUser, options?: QueryOptionsDto): Promise<boolean> {
+    const throwExceptions = options && options.throwExceptions;
+
     const response = await this._userRepository
       .createQueryBuilder()
       .update()
@@ -49,6 +57,10 @@ export class UserAdapter implements UserRepository {
       .where({ id: user.id })
       .execute();
 
-    return !!response.affected;
+    const success = !!response.affected;
+    if (!success && throwExceptions) {
+      throw new HttpException('user.update', 400);
+    }
+    return success;
   }
 }

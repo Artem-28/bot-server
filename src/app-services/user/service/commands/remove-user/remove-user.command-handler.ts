@@ -8,7 +8,7 @@ export class RemoveUserCommandHandler
 {
   constructor(private readonly _userRepository: UserRepository) {}
 
-  async execute({ id }: RemoveUserCommand): Promise<boolean> {
-    return await this._userRepository.remove(id);
+  async execute({ id, options }: RemoveUserCommand): Promise<boolean> {
+    return await this._userRepository.remove(id, options);
   }
 }

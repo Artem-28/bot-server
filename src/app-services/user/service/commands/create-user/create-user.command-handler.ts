@@ -9,8 +9,8 @@ export class CreateUserCommandHandler
 {
   constructor(private readonly _userRepository: UserRepository) {}
 
-  async execute({ dto }: CreateUserCommand): Promise<UserAggregate> {
+  async execute({ dto, options }: CreateUserCommand): Promise<UserAggregate> {
     const userAggregate = UserAggregate.create(dto);
-    return await this._userRepository.save(userAggregate);
+    return await this._userRepository.save(userAggregate, options);
   }
 }

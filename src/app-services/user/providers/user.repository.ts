@@ -1,12 +1,12 @@
 import { User as IUser, UserAggregate } from '../domain';
-import { QueryBuilderOptionsDto } from '@app-services/common/dto';
+import { QueryOptionsDto } from '@app-services/common/dto';
 
 export abstract class UserRepository {
-  abstract save(user: IUser): Promise<UserAggregate>;
-  abstract update(user: IUser): Promise<boolean>;
-  abstract findOne(id: number): Promise<UserAggregate | null>;
+  abstract save(user: IUser, options?: QueryOptionsDto): Promise<UserAggregate>;
+  abstract update(user: IUser, options?: QueryOptionsDto): Promise<boolean>;
+  abstract findOne(options?: QueryOptionsDto): Promise<UserAggregate | null>;
   abstract findAll(
-    options?: QueryBuilderOptionsDto,
+    options?: QueryOptionsDto,
   ): Promise<[UserAggregate[], number]>;
-  abstract remove(id: number): Promise<boolean>;
+  abstract remove(id: number, options?: QueryOptionsDto): Promise<boolean>;
 }

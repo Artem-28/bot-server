@@ -1,10 +1,8 @@
-import { PaginationDto, OrderDto } from './index';
-import { IsOptional } from 'class-validator';
+import { QueryBuilderOptionsDto } from './query-builder-options.dto';
+import { IsBoolean, IsOptional } from 'class-validator';
 
-export class QueryOptionsDto {
+export class QueryOptionsDto extends QueryBuilderOptionsDto {
   @IsOptional()
-  pagination?: PaginationDto;
-
-  @IsOptional()
-  order?: OrderDto;
+  @IsBoolean()
+  throwExceptions?: boolean = false;
 }
