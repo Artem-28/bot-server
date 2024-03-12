@@ -10,8 +10,8 @@ export class GetUsersQueryHandler
   constructor(private readonly _userRepository: UserRepository) {}
 
   async execute({
-    pagination,
+    options,
   }: GetUsersQuery): Promise<[UserAggregate[], number]> {
-    return await this._userRepository.findAll(pagination);
+    return await this._userRepository.findAll(options);
   }
 }

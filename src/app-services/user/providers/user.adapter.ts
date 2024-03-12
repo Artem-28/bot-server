@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { UserAggregate, User as IUser } from '../domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '@app-services';
+import {QueryBuilderHelper, QueryBuilderOptionsDto, UserEntity} from '@app-services';
 import { FindManyOptions, Repository } from 'typeorm';
 import { PaginationDto } from '@app-services/common/dto';
-import { plainToInstance } from 'class-transformer';
+import {instanceToInstance, plainToInstance} from 'class-transformer';
 
 @Injectable()
 export class UserAdapter implements UserRepository {
@@ -22,18 +22,11 @@ export class UserAdapter implements UserRepository {
   }
 
   async findAll(
-    pagination?: PaginationDto,
+    options?: QueryBuilderOptionsDto,
   ): Promise<[UserAggregate[], number]> {
     // Получаем инстанс класса пагинации с дефолтными полями если такие небыли преданы
-    const { take, skip } = plainToInstance(PaginationDto, pagination || {});
-    const options: FindManyOptions<UserEntity> = {
-      take,
-      skip,
-      order: {
-        createdAt: 'DESC',
-      },
-    };
-    const [data, count] = await this._userRepository.findAndCount(options);
+    const queryHelper = new QueryBuilderHelper(this._userRepository, options);
+    const [data, count] = await queryHelper.builder.getManyAndCount();
     return [data.map((user) => UserAggregate.create(user)), count];
   }
 

@@ -39,7 +39,7 @@ export class UserController {
   }
 
   @Get()
-  async getUsers(@QueryOptions() { pagination }) {
-    return await this.userFacade.queries.getUsers(pagination);
+  async getUsers(@QueryOptions() options) {
+    return await this.userFacade.queries.getUsers(options);
   }
 }
