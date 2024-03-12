@@ -69,7 +69,6 @@ export class UserController {
     try {
       return await this.userFacade.queries.getUsers({
         ...options,
-        filter: { field: 'id', value: [10, 11] },
         throwExceptions: true,
       });
     } catch (e) {
