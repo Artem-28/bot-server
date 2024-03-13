@@ -2,7 +2,7 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { UserAggregate, User as IUser } from '../domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryBuilderHelper, QueryOptionsDto, UserEntity } from '@app-services';
+import {QueryBuilderHelper, QueryOptionsDto, ResponseWithCount, UserEntity} from '@app-services';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -25,10 +25,13 @@ export class UserAdapter implements UserRepository {
     return success;
   }
 
-  async findAll(options?: QueryOptionsDto): Promise<[UserAggregate[], number]> {
+  async findAll(
+    options?: QueryOptionsDto,
+  ): Promise<ResponseWithCount<UserAggregate>> {
     const queryHelper = new QueryBuilderHelper(this._userRepository, options);
-    const [data, count] = await queryHelper.builder.getManyAndCount();
-    return [data.map((user) => UserAggregate.create(user)), count];
+    const [result, count] = await queryHelper.builder.getManyAndCount();
+    const data = result.map((user) => UserAggregate.create(user));
+    return { data, count };
   }
 
   async findOne(options?: QueryOptionsDto): Promise<UserAggregate | null> {

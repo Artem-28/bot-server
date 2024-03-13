@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER } from '@nestjs/core';
 
 // Configuration
 import configuration from '@/config/configuration';
 import jwt from '@/config/jwt';
 
 // Providers
-import { ResponseInterceptor } from '@/base/interceptors/response.interceptor';
 import { AllExceptionFilter } from '@/base/filters/all-exception.filter';
 
 // Modules
@@ -53,10 +52,6 @@ import { DomainsModule } from './domains/domains.module';
     DomainsModule,
   ],
   providers: [
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
-    },
     {
       provide: APP_FILTER,
       useClass: AllExceptionFilter,

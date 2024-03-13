@@ -1,5 +1,6 @@
 import { User as IUser, UserAggregate } from '../domain';
 import { QueryOptionsDto } from '@app-services/common/dto';
+import { ResponseWithCount } from '@app-services';
 
 export abstract class UserRepository {
   abstract save(user: IUser, options?: QueryOptionsDto): Promise<UserAggregate>;
@@ -7,6 +8,6 @@ export abstract class UserRepository {
   abstract findOne(options?: QueryOptionsDto): Promise<UserAggregate | null>;
   abstract findAll(
     options?: QueryOptionsDto,
-  ): Promise<[UserAggregate[], number]>;
+  ): Promise<ResponseWithCount<UserAggregate>>;
   abstract remove(id: number, options?: QueryOptionsDto): Promise<boolean>;
 }

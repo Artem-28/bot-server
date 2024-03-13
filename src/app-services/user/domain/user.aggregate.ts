@@ -6,7 +6,8 @@ import {
   IsDefined,
   IsEmail,
   IsNotEmpty,
-  IsNumber, IsOptional,
+  IsNumber,
+  IsOptional,
   IsString,
   validateSync,
 } from 'class-validator';
