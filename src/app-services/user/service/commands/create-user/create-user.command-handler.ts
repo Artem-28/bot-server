@@ -11,6 +11,7 @@ export class CreateUserCommandHandler
 
   async execute({ dto, options }: CreateUserCommand): Promise<UserAggregate> {
     const userAggregate = UserAggregate.create(dto);
+    await userAggregate.plainToInstance();
     return await this._userRepository.save(userAggregate, options);
   }
 }

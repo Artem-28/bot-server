@@ -24,6 +24,7 @@ export class UpdateUserCommandHandler
     if (!existUser) return null;
     Object.assign(existUser, dto);
     const updatedUser = UserAggregate.create(existUser);
+    await updatedUser.plainToInstance();
     const success = await this._userRepository.update(updatedUser);
     if (!success) return null;
     return updatedUser;
